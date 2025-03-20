@@ -8,6 +8,7 @@
   --light-blue: #dce2ef;
   --white: #ffffff;
   --light-gray: #f3f4f6;
+  --gray: #cbcbcb;
   --medium-gray: #898989;
   --dark-gray: #333333;
 }
@@ -137,6 +138,7 @@
   .chat-side-nav {
     @apply w-1/4 p-14 md:w-1/4 lg:w-1/4 flex flex-col items-center gap-8;
     background-color: var(--primary-blue); 
+    
   }
   
   .main-chat-interface {
@@ -145,45 +147,84 @@
   }
 
   .chat-header
-  {
-    @apply flex items-center justify-center w-full p-2 gap-2; 
-    @apply md:flex-row sm:flex-col;
+  { 
     
+    @apply flex items-center ; 
+
   }
 
   .logo-name
   {
-    @apply text-5xl font-bold text-center text-white;
-    white-space: nowrap;
-    @apply sm:text-xl md:text-3xl lg:text-5xl;
+    @apply font-bold text-center text-white;
+    @apply sm:text-xl md:text-2xl lg:text-4xl;
     
-  }
+  } 
 
-  img {
-    max-width: 100%; 
-    height: auto;
+  .data-visualization-button
+  {
+    @apply flex items-center justify-center rounded-lg bg-white p-4 gap-2;
   }
 
   .data-button
-  {
-    @apply flex  text-4xl p-10 rounded-lg font-bold bg-white;
+  { @apply text-3xl font-bold;
     color: var(--primary-blue);
+    @apply flex-col;
   }
+
+
+  
   
   .main-chat-interface {
-    @apply w-full flex flex-col items-center gap-6;
-    background-color: rgb(212, 137, 137);
+    @apply w-full flex flex-col items-center gap-6 p-10;
+   
     
   }
 
   .chat{
-    @apply w-full h-[85%] flex flex-col items-center gap-8;
-    background-color: rgb(113, 55, 55);
+    @apply w-full h-[88%] flex flex-col items-center gap-8 p-8;
+    
   }
 
   .user-input{
-    @apply w-[60%] h-[15%] flex items-center p-5 text-4xl;
-    background-color: rgb(226, 49, 49);
+    @apply w-[70%] h-auto p-2 text-4xl rounded-md text-black;
+    background-color: var(--gray); 
+  }
+
+  .form-elements
+  {
+    @apply flex ;
+    
+  }
+
+  .user-query
+  {
+    @apply w-full h-[30%] p-6 text-black;
+    background-color: var(--gray); 
+    
+  }
+
+  .auto-expand {
+    min-height: 40px;
+    overflow: hidden;
+  }
+
+  .user-query::placeholder {
+    color: var(--medium-gray); 
+    
+  }
+
+  /* chat messages */
+  .user-message {
+    @apply w-[30%] text-white self-end p-8 font-bold rounded-lg;
+    background-color: var(--primary-blue); 
+    @apply sm:text-xl md:text-2xl lg:text-3xl;
+  }
+  
+  .bot-message {
+    @apply w-[60%] self-start p-8 rounded-lg;
+    background-color: var(--light-blue); 
+    color: var(--primary-blue);
+    @apply sm:text-xl md:text-2xl lg:text-3xl;
   }
  
   

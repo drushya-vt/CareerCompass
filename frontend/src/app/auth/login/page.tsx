@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Header from '@/components/Header'
+import { useRouter } from "next/navigation";
 
 export default function Login() {
+  const router = useRouter();
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
@@ -12,6 +14,7 @@ export default function Login() {
     e.preventDefault()
     // Here you would implement the login logic
     console.log('Login attempt with:', { username, password })
+    router.push("/chatbot");
   }
 
   return (

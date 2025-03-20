@@ -4,6 +4,7 @@ import Link from "next/link";
 import logo from "../../resources/logo.png";
 import arrow from "../../resources/arrow.png";
 import graph from "../../resources/graph.png";
+import send from "../../resources/send.png";
 import { useState } from 'react';
 
 
@@ -42,7 +43,7 @@ export default function Chatbot() {
         console.error('Error:', error);
         setMessages((prevMessages) => [
           ...prevMessages,
-          { type: 'bot', text: 'Sorry, something went wrong. Please try again later.' },
+          { type: 'bot', text: 'Sorry, something went wrong. Please try again.' },
         ]);
       }
   
@@ -53,16 +54,16 @@ export default function Chatbot() {
 
       <div className="chat-side-nav">
           <div className="chat-header">
-          <Image src={logo} alt="CareerCompass Logo" className="w-20 h-30" />
-          <p className="logo-name">CareerCompass</p>
+          <div><Image src={logo} alt="CareerCompass Logo" className="w-20 h-30" /></div>
+          <div><span className="logo-name">CareerCompass</span></div>
           </div>
 
           <div className="data-visualization-button">
-          <button type="submit" className="data-button">
-          <Image src={graph} alt="CareerCompass Logo" className="w-20 h-30" />
+            <div><Image src={graph} alt="graph" className="w-20 h-30" /></div>
+          <div><button type="submit" className="data-button">
             View Career Data Dashboard
-            <Image src={arrow} alt="CareerCompass Logo" className="w-20 h-20" />
-          </button>
+          </button></div>
+          <div><Image src={arrow} alt="arrow" className="w-10 h-auto" /></div>
           </div>
           <div className="chat-history">
 
@@ -71,20 +72,28 @@ export default function Chatbot() {
       </div>
 
 
+      
       <div className="main-chat-interface">
         <div className="chat">
-          <p>chat here</p>
+          {/* Displaying the chat messages */}
+          {messages.map((msg, index) => (
+            <div key={index} className={msg.type === 'user' ? 'user-message' : 'bot-message'}>
+              {msg.text}
+            </div>
+          ))}
         </div>
+
         <div className="user-input">
             
-            <form onSubmit={handleSubmit}>
-            <input
-            type="text"
+            <form onSubmit={handleSubmit} className="form-elements">
+            <textarea
             value={userInput}
-            className="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => setUserInput(e.target.value)}
+            className="auto-expand user-query"
             placeholder="Ask me anything about careers, skills, or job trends..."
+            rows={1} // Start with 1 row
             />
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></button>
+            <button type="submit" className=""><Image src={send} alt="Send Button" className="w-20 h-auto" /></button>
             </form>
         </div>
       </div>
