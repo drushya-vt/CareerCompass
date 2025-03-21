@@ -1,7 +1,9 @@
 fastapi
 pydantic
+uvicorn
 chromadb
 groq
 openai
 tiktoken
-uvicorn
+python-dotenv
+langchain
