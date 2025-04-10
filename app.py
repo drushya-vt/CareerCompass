@@ -6,13 +6,27 @@ from groq import Groq
 from openai import OpenAI
 import tiktoken
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
+
+
+
 
 # Initialize FastAPI app
 app = FastAPI()
 # Initialize clients
 # D:\Rajat_VTech\Semester_4\Capstone_Project_Ideas\Codebase\careervectorstorefinal
 # careervectorstorefinal
-CHROMA_DB_PATH = "D:\Rajat_VTech\Semester_4\Capstone_Project_Ideas\Codebase\careervectorstorefinal"  # Path to your persistent ChromaDB from the creation script
+# Allow all origins (or you can specify particular domains)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
+
+
+CHROMA_DB_PATH = r"C:\Users\mohin\OneDrive\Desktop\capstone\careervectorstorefinal"  # Path to your persistent ChromaDB from the creation script
 chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
 openai_client = OpenAI(api_key="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")  # For query embedding
 groq_client = Groq(api_key="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")  # Groq API key to call LLaMA
