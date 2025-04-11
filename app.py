@@ -6,6 +6,13 @@ from groq import Groq
 from openai import OpenAI
 import tiktoken
 import uvicorn
+import re
+
+# def clean_response(text):
+#     text = text.replace('\n', ' ')        # Replace newlines with space
+#     text = text.replace('*', '')          # Remove asterisks (used in markdown)
+#     text = re.sub(r'\s+', ' ', text)      # Replace multiple spaces with one
+#     return text.strip()
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -67,17 +74,23 @@ async def process_query(request: QueryRequest):
         # On-the-Job Training
         context += f"On-the-Job Training: {doc_lines[5][21:][:100]}...\n" if len(doc_lines) > 5 else "On-the-Job Training: None\n"
         context += f"Work Activities: {doc_lines[6][15:][:100]}...\n"  # Truncate to 100 chars
-        context += f"Technical Skills: {doc_lines[7][17:][:100]}...\n"
-        context += f"Core Tasks: {doc_lines[8][11:][:100]}...\n" if len(doc_lines) > 8 else "Core Tasks: None\n"
-        context += f"Supplemental Tasks: {doc_lines[9][18:][:100]}...\n" if len(doc_lines) > 9 else "Supplemental Tasks: None\n"
+        context += f"Alternate Titles: {doc_lines[7][17:][:100]}...\n"
+        context += f"Tools Used: {doc_lines[8][11:][:100]}...\n"
+        context += f"Technical Skills: {doc_lines[9][17:][:100]}...\n"
+        context += f"Core Tasks: {doc_lines[10][11:][:100]}...\n" if len(doc_lines) > 11 else "Core Tasks: None\n"
+        context += f"Supplemental Tasks: {doc_lines[11][18:][:100]}...\n" if len(doc_lines) >11 else "Supplemental Tasks: None\n"
         context += "\n"
     
     # Construct prompt with summarized context
-    prompt = f"""You are an AI assistant helping with job-related queries. 
-            Use the following summarized job descriptions to answer the query. 
-            Focus on titles, descriptions, key skills, education, work experience, 
-            on-the-job training, work activities, technical skills, core tasks, and 
-            supplemental tasks. If the information isn’t sufficient, suggest what might help.
+#     You are an AI assistant helping with job-related queries. 
+# Use the following summarized job descriptions to answer the query. 
+# Focus on titles, descriptions, key skills, education, work experience, 
+# on-the-job training, work activities, technical skills, alternate titles, core tasks, and 
+# supplemental tasks. If the information isn’t sufficient, suggest what might help.
+    prompt = f"""You are a career guidance assistant helping users explore job roles based on their interests and goals.
+Use the summarized job descriptions below as your primary knowledge source to answer the user's query.
+Base your answers strictly on the provided information, but if relevant, include industry-recognized certifications or skills that are commonly required or beneficial for the role.
+Always ensure your answers are specific, helpful, and actionable.
 
 Query: {query}
 
@@ -93,13 +106,15 @@ Answer:"""
     response = groq_client.chat.completions.create(
         model="llama3-70b-8192",  # LLaMA model via Groq
         messages=[
-            {"role": "system", "content": "You are a helpful AI career assistant."},
+            {"role": "system", "content": "You are a chatbot named CareerCompass. You are a highly knowledgeable and supportive career assistant. You are assisting a user explore career options and make informed decisions based on their interests, education, skills, and preferences. Each time the user converses with you, make sure the context is professional and about their career and that you are providing a helpful response. If the user asks you to do something that is not about a career guidance you should refuse to respond. Keep responses concise yet informative. Use bullet points or numbered lists to break down complex topics into digestible steps."},
             {"role": "user", "content": prompt}
         ],
         max_tokens=500,
         temperature=0.7
     )
     
+    # raw_answer = response.choices[0].message.content
+    # cleaned_answer = clean_response(raw_answer)
     answer = response.choices[0].message.content
     return {"query": query, "response": answer}
     
