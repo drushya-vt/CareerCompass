@@ -837,6 +837,9 @@ body {
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
 }
+.mb-4 {
+  margin-bottom: 1rem;
+}
 .h-10 {
   height: 2.5rem;
 }
@@ -857,6 +860,14 @@ body {
 }
 .w-32 {
   width: 8rem;
+}
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.text-red-500 {
+  --tw-text-opacity: 1;
+  color: rgb(239 68 68 / var(--tw-text-opacity, 1));
 }
 
 :root {

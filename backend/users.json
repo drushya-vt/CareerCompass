@@ -1,0 +1,10 @@
+{
+    "testuser": {
+        "password": "password123",
+        "email": "test@example.com"
+    },
+    "siddhi": {
+        "password": "siddhi",
+        "email": "siddhi@bt.edu"
+    }
+}

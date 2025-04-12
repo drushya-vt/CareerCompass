@@ -7,9 +7,37 @@ from groq import Groq
 from openai import OpenAI
 import tiktoken
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
+import logging
+import sys
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger(__name__)
+
+# Add test log messages
+logger.debug("Debug message")
+logger.info("Info message")
+logger.warning("Warning message")
+logger.error("Error message")
 
 # Initialize FastAPI app
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Your React frontend URL
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
+
 # Initialize clients
 # D:\Rajat_VTech\Semester_4\Capstone_Project_Ideas\Codebase\careervectorstorefinal
 # careervectorstorefinal
@@ -19,10 +47,25 @@ openai_client = OpenAI(api_key="sk-proj-8SrGZ_vKha6kJGCNzaedmG5C6nEQM0_3uAGoRMCk
 groq_client = Groq(api_key="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")  # Groq API key to call LLaMA
 
 
-fake_users_db = {
-    "testuser": "password123"
-}
+# File to store user data
+USERS_FILE = 'users.json'
 
+# Load users from file or create default if file doesn't exist
+def load_users():
+    try:
+        with open(USERS_FILE, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        # Return default user database if file doesn't exist
+        return {"testuser": {"password": "password123", "email": "test@example.com"}}
+
+# Save users to file
+def save_users(users):
+    with open(USERS_FILE, 'w') as f:
+        json.dump(users, f, indent=4)
+
+# Initialize user database
+fake_users_db = load_users()
 logged_in_users = {}
 
 # Request model
@@ -50,30 +93,55 @@ def query_vector_store(query, n_results=3):
 
 
 # fake_users_db: Dict[str, str] = {}
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
 # Request body model
 class UserRequest(BaseModel):
     username: str
     password: str
+    email: str
 
 
 # Sign Up Endpoint
 @app.post("/signup")
-async def signup(user: UserRequest):  # No need to use `request.body()`
-    if user.username in fake_users_db:
-        raise HTTPException(status_code=400, detail="Username already exists")
+async def signup(user: UserRequest):
+    logger.debug(f"Received signup request for username: {user.username}")
+    logger.debug(f"Request data: {user.dict()}")
     
-    # Store user credentials
-    fake_users_db[user.username] = user.password
-    return {"message": "User registered successfully"}
+    try:
+        if user.username in fake_users_db:
+            logger.warning(f"Signup failed - username already exists: {user.username}")
+            raise HTTPException(status_code=400, detail="Username already exists")
+        
+        # Add user to database
+        fake_users_db[user.username] = {
+            "password": user.password,
+            "email": user.email
+        }
+        
+        # Save updated user database to file
+        save_users(fake_users_db)
+        
+        logger.info(f"User registered successfully: {user.username}")
+        logger.debug(f"Current users in db: {list(fake_users_db.keys())}")
+        
+        return {"message": "User registered successfully"}
+        
+    except Exception as e:
+        logger.error(f"Error during signup: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/login")
-async def login(user: UserRequest):
-    if user.username in fake_users_db and fake_users_db[user.username] == user.password:
-        logged_in_users[user.username] = True  # Mark user as logged in
+def login(user: LoginRequest):
+    if user.username in fake_users_db and fake_users_db[user.username]["password"] == user.password:
+        logged_in_users[user.username] = True
         return {"message": f"User {user.username} signed in successfully"}
-    
-    raise HTTPException(status_code=401, detail="Invalid username or password")
+    raise HTTPException(
+        status_code=401, 
+        detail="Invalid username or password"
+    )
 
 @app.post("/logout")
 async def signout(user: UserRequest):
@@ -82,30 +150,6 @@ async def signout(user: UserRequest):
         return {"message": f"User {user.username} signed out successfully"}
     
     raise HTTPException(status_code=400, detail="User is not signed in or session expired")
-
-
-# @app.post("/login")
-# async def login(request: UserRequest):
-#     raw_body = await request.body()
-#     print(f"Raw request body: {raw_body.decode('utf-8')}")  # Debugging
-
-#     try:
-#         request_data = json.loads(raw_body)
-#     except json.JSONDecodeError:
-#         raise HTTPException(status_code=400, detail="Invalid JSON format")
-
-#     # Ensure all required fields are present
-#     if "username" not in request_data or "password" not in request_data:
-#         raise HTTPException(status_code=400, detail="Missing username or password")
-
-#     username = request_data["username"]
-#     password = request_data["password"]
-
-#     if username in fake_users_db and fake_users_db[username] == password:
-#         return {"message": "Login successful"}
-    
-#     raise HTTPException(status_code=401, detail="Invalid username or password")
-
 
 
 @app.post("/query")
@@ -133,12 +177,13 @@ async def process_query(request: QueryRequest):
         context += f"Supplemental Tasks: {doc_lines[9][18:][:100]}...\n" if len(doc_lines) > 9 else "Supplemental Tasks: None\n"
         context += "\n"
     
-    # Construct prompt with summarized context
-    prompt = f"""You are an AI assistant helping with job-related queries. 
-            Use the following summarized job descriptions to answer the query. 
-            Focus on titles, descriptions, key skills, education, work experience, 
-            on-the-job training, work activities, technical skills, core tasks, and 
-            supplemental tasks. If the information isn’t sufficient, suggest what might help.
+    # Construct prompt - proper multi-line f-string formatting
+    prompt = f"""You are an AI assistant helping with job-related queries.
+    Use the following summarized job descriptions to answer the query.
+    Focus on titles, descriptions, key skills, education, work experience,
+    on-the-job training, work activities, technical skills, core tasks, and
+    supplemental tasks. If the information isn’t sufficient, suggest what might help.
+
 
 Query: {query}
 

@@ -7,55 +7,81 @@ import { useRouter } from "next/navigation";
 
 export default function Login() {
   const router = useRouter();
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Here you would implement the login logic
-    console.log('Login attempt with:', { username, password })
-    router.push("/chatbot");
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        router.push("/chatbot");
+      } else {
+        if (Array.isArray(data.detail)) {
+          setError(data.detail[0]?.msg || 'Login failed');
+        } else {
+          setError(data.detail || 'Login failed');
+        }
+      }
+    } catch (err) {
+      setError('Failed to connect to server');
+      console.error('Login error:', err);
+    }
+  };
 
   return (
     <div>
-    <Header/>
-    <div className="auth-container">
-      <div className="auth-form-card">
-        <h1 className="auth-heading">Login</h1>
-        <form onSubmit={handleSubmit} className="form-container">
-          <div>
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="form-input"
-              required
-            />
-          </div>
-          
-          <div>
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="form-input"
-              required
-            />
-          </div>
-          
-          <button type="submit" className="form-button">
-            Log in
-          </button>
-        </form>
-        
-        <p className="auth-link-text">
-          Don't have an account? <Link href="/auth/signup" className="auth-link">Sign up</Link>
-        </p>
+      <Header />
+      <div className="auth-container">
+        <div className="auth-form-card">
+          <h1 className="auth-heading">Login</h1>
+          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+          <form onSubmit={handleSubmit} className="form-container">
+            <div>
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="form-input"
+                required
+              />
+            </div>
+
+            <div>
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="form-input"
+                required
+              />
+            </div>
+
+            <button type="submit" className="form-button">
+              Log in
+            </button>
+          </form>
+
+          <p className="auth-link-text">
+            Don't have an account?{' '}
+            <Link href="/auth/signup" className="auth-link">Sign up</Link>
+          </p>
+        </div>
       </div>
     </div>
-    </div>
-  )
+  );
 }
