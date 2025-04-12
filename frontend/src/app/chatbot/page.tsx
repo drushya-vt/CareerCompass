@@ -6,6 +6,10 @@ import arrow from "../../resources/arrow.png";
 import graph from "../../resources/graph.png";
 import send from "../../resources/send.png";
 import { useState } from 'react';
+import { useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+
+
 
 
 interface Message {
@@ -15,8 +19,16 @@ interface Message {
 
 
 export default function Chatbot() {
+
+  const chatRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState('');
+
+  useEffect(() => {
+    if (chatRef.current) {
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +51,7 @@ export default function Chatbot() {
           ...prevMessages,
           { type: 'bot', text: data.response },
         ]);
+        
       } catch (error) {
         console.error('Error:', error);
         setMessages((prevMessages) => [
@@ -57,12 +70,16 @@ export default function Chatbot() {
           <div><Image src={logo} alt="CareerCompass Logo" className="w-20 h-30" /></div>
           <div><span className="logo-name">CareerCompass</span></div>
           </div>
-
+          
           <div className="data-visualization-button">
             <div><Image src={graph} alt="graph" className="w-20 h-30" /></div>
-          <div><button type="submit" className="data-button">
+          <div>
+          <a href="https://public.tableau.com/views/CareerCompass/Overview?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link" 
+          
+    >
+            <button type="submit" className="data-button">
             View Career Data Dashboard
-          </button></div>
+          </button></a></div>
           <div><Image src={arrow} alt="arrow" className="w-10 h-auto" /></div>
           </div>
           <div className="chat-history">
@@ -74,13 +91,19 @@ export default function Chatbot() {
 
       
       <div className="main-chat-interface">
-        <div className="chat">
+        <div className="chat" ref={chatRef}>
           {/* Displaying the chat messages */}
           {messages.map((msg, index) => (
-            <div key={index} className={msg.type === 'user' ? 'user-message' : 'bot-message'}>
-              {msg.text}
-            </div>
-          ))}
+  <div key={index} className={msg.type === 'user' ? 'user-message' : 'bot-message'}>
+    {msg.type === 'bot' ? (
+      <ReactMarkdown>{msg.text}</ReactMarkdown>
+
+    ) : (
+      <p>{msg.text}</p>
+      
+    )}
+  </div>
+))}
         </div>
 
         <div className="user-input">
