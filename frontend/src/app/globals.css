@@ -181,7 +181,8 @@
   }
 
   .chat{
-    @apply w-full h-[88%] flex flex-col items-center gap-8 p-8;
+    @apply w-full h-[88%] flex flex-col items-center gap-8 p-8 overflow-y-auto;
+    
     
   }
 
