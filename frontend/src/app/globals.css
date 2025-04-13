@@ -4,6 +4,7 @@
 @tailwind utilities;
 
 :root {
+  --chat-nav-height: 80px;
   --primary-blue: #07338c;
   --light-blue: #dce2ef;
   --white: #ffffff;
@@ -132,18 +133,19 @@
   /* Chat Interface Styles */
 
   .outer-interface {
-    @apply flex  w-full h-screen; 
+    @apply flex flex-col md:flex-row w-full h-screen;
   }
   
   .chat-side-nav {
-    @apply w-1/4 p-14 md:w-1/4 lg:w-1/4 flex flex-col items-center gap-8;
-    background-color: var(--primary-blue); 
-    
+    @apply w-full md:w-1/4 p-4 md:p-8 lg:p-14 flex flex-col items-center gap-4 md:gap-8;
+    background-color: var(--primary-blue);
   }
   
   .main-chat-interface {
-    @apply w-3/4 bg-yellow-300 p-4 flex-1 md:w-3/4 lg:w-3/4;
+    @apply w-full md:w-3/4 p-4 flex-1;
     background-color: var(--white);
+    height: calc(100vh - var(--chat-nav-height));
+    @apply md:h-screen;
   }
 
   .chat-header
@@ -160,9 +162,9 @@
     
   } 
 
-  .data-visualization-button
-  {
-    @apply flex items-center justify-center rounded-lg bg-white p-4 gap-2;
+  .data-visualization-button {
+    @apply flex items-center justify-center rounded-lg bg-white p-2 md:p-4 gap-1 md:gap-2;
+    @apply text-sm md:text-base lg:text-lg;
   }
 
   .data-button
@@ -181,13 +183,11 @@
   }
 
   .chat{
-    @apply w-full h-[88%] flex flex-col items-center gap-8 p-8 overflow-y-auto;
-    
-    
+    @apply w-full h-[calc(100%-80px)] flex flex-col items-center gap-4 md:gap-8 p-4 md:p-8 overflow-y-auto;
   }
 
   .user-input{
-    @apply w-[70%] h-auto p-2 text-4xl rounded-md text-black;
+    @apply w-full md:w-[80%] lg:w-[70%] h-auto p-2 text-base md:text-xl lg:text-2xl rounded-md text-black;
     background-color: var(--gray); 
   }
 
@@ -216,16 +216,16 @@
 
   /* chat messages */
   .user-message {
-    @apply w-[30%] text-white self-end p-8 font-bold rounded-lg;
+    @apply w-[80%] md:w-[60%] lg:w-[30%] text-white self-end p-4 md:p-6 lg:p-8 font-bold rounded-lg;
     background-color: var(--primary-blue); 
-    @apply sm:text-xl md:text-2xl lg:text-3xl;
+    @apply text-base sm:text-lg md:text-xl lg:text-2xl;
   }
   
   .bot-message {
-    @apply w-[60%] self-start p-8 rounded-lg;
+    @apply w-[80%] md:w-[70%] lg:w-[60%] self-start p-4 md:p-6 lg:p-8 rounded-lg;
     background-color: var(--light-blue); 
     color: var(--primary-blue);
-    @apply sm:text-xl md:text-2xl lg:text-3xl;
+    @apply text-base sm:text-lg md:text-xl lg:text-2xl;
   }
  
   
