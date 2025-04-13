@@ -12,6 +12,7 @@ import ReactMarkdown from 'react-markdown';
 
 
 
+
 interface Message {
     type: string;
     text: string;
@@ -32,6 +33,7 @@ export default function Chatbot() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!userInput.trim()) return;
     setMessages([...messages, { type: 'user', text: userInput }]);
     setUserInput('');
 
@@ -61,6 +63,8 @@ export default function Chatbot() {
       }
   
   };
+
+  const isMessageEmpty = userInput.trim() === '';
 
   return (
     <div className="outer-interface">
@@ -96,7 +100,10 @@ export default function Chatbot() {
           {messages.map((msg, index) => (
   <div key={index} className={msg.type === 'user' ? 'user-message' : 'bot-message'}>
     {msg.type === 'bot' ? (
-      <ReactMarkdown>{msg.text}</ReactMarkdown>
+      <ReactMarkdown>
+        {msg.text}
+      </ReactMarkdown>
+   
 
     ) : (
       <p>{msg.text}</p>
@@ -113,10 +120,20 @@ export default function Chatbot() {
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
             className="auto-expand user-query"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey && !isMessageEmpty) {
+                e.preventDefault(); 
+                handleSubmit(e);    
+              }
+            }}
             placeholder="Ask me anything about careers, skills, or job trends..."
             rows={1} // Start with 1 row
             />
-            <button type="submit" className=""><Image src={send} alt="Send Button" className="w-20 h-auto" /></button>
+            <button type="submit" 
+            disabled={isMessageEmpty}
+            className={`transition-opacity duration-200 ${
+          isMessageEmpty ? 'opacity-50 cursor-not-allowed' : 'opacity-100'
+        }`}><Image src={send} alt="Send Button" className="w-20 h-auto" /></button>
             </form>
         </div>
       </div>
