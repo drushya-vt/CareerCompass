@@ -10,6 +10,11 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 import sys
+import os
+import datetime
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
+from langchain.schema import SystemMessage, HumanMessage, AIMessage
 
 # Configure logging
 logging.basicConfig(
@@ -38,13 +43,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Load environment variables
+load_dotenv()
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+if not GROQ_API_KEY:
+    raise ValueError("❌ Missing GROQ_API_KEY in the .env file.")
+
 # Initialize clients
-# D:\Rajat_VTech\Semester_4\Capstone_Project_Ideas\Codebase\careervectorstorefinal
-# careervectorstorefinal
-CHROMA_DB_PATH = "/Users/siddhikasera/Desktop/career-compass/careervectorstorefinal"  # Path to your persistent ChromaDB from the creation script
+CHROMA_DB_PATH = "/Users/siddhikasera/Desktop/career-compass/careervectorstorefinal"  # Path to your persistent ChromaDB
 chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
-openai_client = OpenAI(api_key="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")  # For query embedding
-groq_client = Groq(api_key="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")  # Groq API key to call LLaMA
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
+groq_client = Groq(api_key=GROQ_API_KEY)
+
+# Initialize LangChain model
+chat_model = ChatOpenAI(
+    model="llama3-70b-8192",
+    openai_api_key=GROQ_API_KEY,
+    openai_api_base="https://api.groq.com/openai/v1"
+)
+
+# Chat history directory setup
+CHAT_HISTORY_DIR = "chat_history"
+os.makedirs(CHAT_HISTORY_DIR, exist_ok=True)
+
+# System prompt for chat
+SYSTEM_PROMPT = "You are a helpful AI assistant. Answer strictly based on the given context."
+conversation_history = [SystemMessage(content=SYSTEM_PROMPT)]
 
 
 # File to store user data
@@ -68,8 +94,11 @@ def save_users(users):
 fake_users_db = load_users()
 logged_in_users = {}
 
-# Request model
+# Request models
 class QueryRequest(BaseModel):
+    query: str
+
+class ChatRequest(BaseModel):
     query: str
 
 # Function to query the vector store
@@ -237,6 +266,122 @@ Answer:"""
 
 
 
+def get_timestamp():
+    return datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+def save_conversation():
+    timestamp = get_timestamp()
+    filename = f"chat_{timestamp}.json"
+    filepath = os.path.join(CHAT_HISTORY_DIR, filename)
+
+    history_data = [
+        {"role": "system", "content": conversation_history[0].content}
+    ] + [
+        {"role": "user" if isinstance(msg, HumanMessage) else "assistant", "content": msg.content}
+        for msg in conversation_history[1:]
+    ]
+
+    with open(filepath, "w", encoding="utf-8") as file:
+        json.dump(history_data, file, indent=4)
+
+    logger.info(f"Chat history saved as: {filepath}")
+    return filename
+
+def send_message(user_message):
+    global conversation_history
+
+    if len(conversation_history) == 1:  # Only system message
+        context = query_vector_store(user_message)
+        if not context or not context.get("documents") or not context["documents"][0]:
+            fallback = (
+                "I couldn't find much information on that topic. "
+                "Try refining your query or check platforms like "
+                "[Indeed](https://www.indeed.com) or [LinkedIn](https://www.linkedin.com/jobs/)."
+            )
+            save_conversation()
+            return {"query": user_message, "response": fallback}
+
+        context_str = ""
+        for i, doc in enumerate(context['documents'][0][:3]):
+            doc_lines = doc.split('\n')
+            context_str += f"Document {i+1}:\n"
+            context_str += f"Title: {doc_lines[0][6:]}\n"
+            context_str += f"Description: {doc_lines[1][12:][:200]}...\n"
+            context_str += f"Key Skills: {doc_lines[2][7:][:100]}...\n"
+            context_str += f"Education: {doc_lines[3][10:][:100]}...\n"
+            context_str += f"Work Experience: {doc_lines[4][15:][:100]}...\n" if len(doc_lines) > 4 else "Work Experience: None\n"
+            context_str += f"On-the-Job Training: {doc_lines[5][21:][:100]}...\n" if len(doc_lines) > 5 else "On-the-Job Training: None\n"
+            context_str += f"Work Activities: {doc_lines[6][15:][:100]}...\n"
+            context_str += f"Technical Skills: {doc_lines[7][17:][:100]}...\n"
+            context_str += f"Core Tasks: {doc_lines[8][11:][:100]}...\n" if len(doc_lines) > 8 else "Core Tasks: None\n"
+            context_str += f"Supplemental Tasks: {doc_lines[9][18:][:100]}...\n" if len(doc_lines) > 9 else "Supplemental Tasks: None\n\n"
+
+        full_prompt = f"""You are an AI assistant helping with job-related queries.\nUse the following summarized job descriptions to answer the query.\nFocus on titles, descriptions, key skills, education, work experience, on-the-job training, work activities, technical skills, core tasks, and supplemental tasks. If the information isn't sufficient, suggest what might help.\n\nQuery: {user_message}\n\nContext:\n{context_str}\n\nAnswer:"""
+
+        conversation_history.append(HumanMessage(content=full_prompt))
+    else:
+        conversation_history.append(HumanMessage(content=user_message))
+
+    assistant_reply = chat_model.invoke(conversation_history)
+    conversation_history.append(assistant_reply)
+
+    return {"query": user_message, "response": assistant_reply.content}
+
+@app.post("/chatbot")
+async def chatbot_endpoint(request: ChatRequest):
+    try:
+        return send_message(request.query)
+    except Exception as e:
+        logger.error(f"Error in chatbot endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/exit")
+async def exit_chat():
+    try:
+        filename = save_conversation()
+        global conversation_history
+        conversation_history = [SystemMessage(content=SYSTEM_PROMPT)]
+        return {"message": "Conversation saved and chat reset.", "file": filename}
+    except Exception as e:
+        logger.error(f"Error in exit chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/history")
+async def list_saved_chats():
+    try:
+        files = [f for f in os.listdir(CHAT_HISTORY_DIR) if f.endswith(".json")]
+        return {"saved_chats": files}
+    except Exception as e:
+        logger.error(f"Error listing saved chats: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/resume/{filename}")
+async def resume_conversation(filename: str):
+    try:
+        filepath = os.path.join(CHAT_HISTORY_DIR, filename)
+        if not os.path.exists(filepath):
+            raise HTTPException(status_code=404, detail="Conversation not found.")
+
+        with open(filepath, "r", encoding="utf-8") as f:
+            saved_data = json.load(f)
+
+        global conversation_history
+        conversation_history = []
+        for message in saved_data:
+            role = message["role"]
+            content = message["content"]
+            if role == "system":
+                conversation_history.append(SystemMessage(content=content))
+            elif role == "user":
+                conversation_history.append(HumanMessage(content=content))
+            elif role == "assistant":
+                conversation_history.append(AIMessage(content=content))
+
+        logger.info(f"Conversation '{filename}' resumed successfully")
+        return {"message": f"Conversation '{filename}' resumed successfully."}
+    except Exception as e:
+        logger.error(f"Error resuming conversation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
-    
     uvicorn.run(app, host="127.0.0.1", port=8000)
