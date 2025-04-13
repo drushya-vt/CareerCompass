@@ -6,5 +6,17 @@
     "siddhi": {
         "password": "siddhi",
         "email": "siddhi@bt.edu"
+    },
+    "siddhikasera": {
+        "password": "siddhi123",
+        "email": "siddhi@vt.edu"
+    },
+    "siddhikasera20": {
+        "password": "siddhikasera20",
+        "email": "siddhikasera@gmail.com"
+    },
+    "siddhimk": {
+        "password": "siddhi123",
+        "email": "siddhik@yahoo.com"
     }
 }
