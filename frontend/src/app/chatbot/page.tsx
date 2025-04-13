@@ -8,6 +8,7 @@ import send from "../../resources/send.png";
 import { useState } from 'react';
 import { useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 
 
@@ -100,9 +101,12 @@ export default function Chatbot() {
           {messages.map((msg, index) => (
   <div key={index} className={msg.type === 'user' ? 'user-message' : 'bot-message'}>
     {msg.type === 'bot' ? (
-      <ReactMarkdown>
+      <div className="prose">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>
         {msg.text}
+       
       </ReactMarkdown>
+    </div>
    
 
     ) : (

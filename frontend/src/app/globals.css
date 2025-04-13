@@ -221,11 +221,36 @@
   }
   
   .bot-message {
-    @apply w-[60%] self-start p-6 rounded-lg text-sm sm:text-sm md:text-sm lg:text-sm;
+    @apply w-[60%] self-start p-6 text-base rounded-lg text-sm sm:text-sm md:text-sm lg:text-sm;
     background-color: var(--light-blue);
     color: var(--primary-blue);
   }
+
+  .prose {
+    p, li, span, div {
+      @apply text-[var(--primary-blue)];
+    }
+
+    strong {
+      @apply text-[var(--primary-blue)];
+    }
+  }
   
- 
+  .prose ul {
+    @apply list-disc pl-5; /* Style list items with disc bullets */
+  }
+  
+  .prose li {
+    @apply text-[var(--primary-blue)]; /* Set text color to primary-blue */
+  }
+  
+  .prose li::marker {
+    color: var(--primary-blue); /* Set bullet points color to primary-blue */
+  }
+  
+  /* Targeting all headings in .prose */
+  .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    @apply text-[var(--primary-blue)]; /* Set all headings to primary-blue */
+  }
   
 }
