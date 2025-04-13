@@ -7,14 +7,14 @@ import { useRouter } from "next/navigation";
 
 export default function Signup() {
   const router = useRouter();
-  const [email, setEmail] = useState('')
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+    e.preventDefault();
+    setError('');
 
     try {
       const response = await fetch('http://localhost:8000/signup', {
@@ -29,23 +29,23 @@ export default function Signup() {
         })
       });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
-        console.log('Signup successful:', data.message)
-        router.push("/auth/login")
+        console.log('Signup successful:', data.message);
+        router.push("/auth/login");
       } else {
-        setError(data.detail || 'Signup failed')
+        setError(data.detail || 'Signup failed');
       }
     } catch (err) {
-      setError('Failed to connect to server')
-      console.error('Signup error:', err)
+      setError('Failed to connect to server');
+      console.error('Signup error:', err);
     }
-  }
+  };
 
   return (
     <div>
-      <Header/>
+      <Header />
       <div className="auth-container">
         <div className="auth-form-card">
           <h1 className="auth-heading">Sign Up</h1>
@@ -90,7 +90,10 @@ export default function Signup() {
           </form>
           
           <p className="auth-link-text">
-            Already have an account? <Link href="/auth/login" className="auth-link">Log in</Link>
+            Already have an account?{' '}
+            <Link href="/auth/login" className="auth-link">
+              Log in
+            </Link>
           </p>
         </div>
       </div>

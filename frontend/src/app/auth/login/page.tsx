@@ -77,8 +77,8 @@ export default function Login() {
           </form>
 
           <p className="auth-link-text">
-            Don't have an account?{' '}
-            <Link href="/auth/signup" className="auth-link">Sign up</Link>
+          Don&apos;t have an account?{' '}
+          <Link href="/auth/signup" className="auth-link">Sign up</Link>
           </p>
         </div>
       </div>

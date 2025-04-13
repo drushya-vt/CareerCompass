@@ -1,6 +1,6 @@
 "use client"
 import Image from "next/image";
-import Link from "next/link";
+// import Link from "next/link";
 import logo from "../../resources/logo.png";
 import arrow from "../../resources/arrow.png";
 import graph from "../../resources/graph.png";
