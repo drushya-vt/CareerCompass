@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "autoprefixer": "^10.x.x",
     "axios": "^1.8.3",
     "next": "^15.2.2",

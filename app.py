@@ -26,7 +26,7 @@ app.add_middleware(
 )
 
 
-CHROMA_DB_PATH = r"C:\Users\mohin\OneDrive\Desktop\capstone\careervectorstorefinal"  # Path to your persistent ChromaDB from the creation script
+CHROMA_DB_PATH = r"careervectorstorefinal"  # Path to your persistent ChromaDB from the creation script
 chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
 openai_client = OpenAI(api_key="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")  # For query embedding
 groq_client = Groq(api_key="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")  # Groq API key to call LLaMA
@@ -65,33 +65,57 @@ def query_vector_store(query, n_results=3):
 async def process_query(request: QueryRequest):
     query = request.query  # Extract the query from the request body
     results = query_vector_store(query, n_results=3)
+    
+
+    
     # results = query_vector_store(query, n_results)
     
     # Summarize context to focus on key fields
     context = ""
+
     for i, doc in enumerate(results['documents'][0][:3]):
-        doc_lines = doc.split('\n')  # Split document into lines
-        context += f"Document {i+1}:\n"
-        context += f"Title: {doc_lines[0][6:]}\n"  # Remove "Title: " prefix
-        context += f"Description: {doc_lines[1][12:][:200]}...\n"  # Truncate to 200 chars
-        context += f"Key Skills: {doc_lines[2][7:][:100]}...\n"  # Truncate to 100 chars
-        context += f"Education: {doc_lines[3][10:][:100]}...\n"  # Truncate to 100 chars
-        # Work Experience
-        context += f"Work Experience: {doc_lines[4][15:][:100]}...\n" if len(doc_lines) > 4 else "Work Experience: None\n"
-        # On-the-Job Training
-        context += f"On-the-Job Training: {doc_lines[5][21:][:100]}...\n" if len(doc_lines) > 5 else "On-the-Job Training: None\n"
-        context += f"Work Activities: {doc_lines[6][15:][:100]}...\n"  # Truncate to 100 chars
-        context += f"Technical Skills: {doc_lines[7][17:][:100]}...\n"
-        context += f"Core Tasks: {doc_lines[8][11:][:100]}...\n" if len(doc_lines) > 8 else "Core Tasks: None\n"
-        context += f"Supplemental Tasks: {doc_lines[9][18:][:100]}...\n" if len(doc_lines) > 9 else "Supplemental Tasks: None\n"
-        context += "\n"
+         doc_lines = doc.split('\n')  # Split document into lines
+         context += f"### 📄 Document {i+1}\n"
+         context += f"**🧑‍💼 Title:** {doc_lines[0][6:]}\n"
+         context += f"**📘 Description:** {doc_lines[1][12:][:200]}...\n"
+         context += f"**🛠️ Key Skills:**\n- {doc_lines[2][7:][:100]}...\n"
+         context += f"**🎓 Education:**\n- {doc_lines[3][10:][:100]}...\n"
+         context += f"**💼 Work Experience:**\n- {doc_lines[4][15:][:100]}...\n" if len(doc_lines) > 4 else "**💼 Work Experience:**\n- None\n"
+         context += f"**🧪 On-the-Job Training:**\n- {doc_lines[5][21:][:100]}...\n" if len(doc_lines) > 5 else "**🧪 On-the-Job Training:**\n- None\n"
+         context += f"**🧰 Work Activities:**\n- {doc_lines[6][15:][:100]}...\n" if len(doc_lines) > 6 else "**🧰 Work Activities:**\n- None\n"
+         context += f"**🔧 Technical Skills:**\n- {doc_lines[7][17:][:100]}...\n" if len(doc_lines) > 7 else "**🔧 Technical Skills:**\n- None\n"
+         context += f"**📋 Core Tasks:**\n- {doc_lines[8][11:][:100]}...\n" if len(doc_lines) > 8 else "**📋 Core Tasks:**\n- None\n"
+         context += f"**➕ Supplemental Tasks:**\n- {doc_lines[9][18:][:100]}...\n" if len(doc_lines) > 9 else "**➕ Supplemental Tasks:**\n- None\n"
+         context += "\n"
+
+   
+
+   
     
     # Construct prompt with summarized context
-    prompt = f"""You are an AI assistant helping with job-related queries. 
-            Use the following summarized job descriptions to answer the query. 
-            Focus on titles, descriptions, key skills, education, work experience, 
-            on-the-job training, work activities, technical skills, core tasks, and 
-            supplemental tasks. If the information isn’t sufficient, suggest what might help.
+    prompt = f"""You are a career guidance assistant helping users explore job roles based on their interests and goals.
+Use the summarized job descriptions below as your primary knowledge source to answer the user's query.
+Base your answers strictly on the provided information, but if relevant, include industry-recognized certifications or skills that are commonly required or beneficial for the role.
+Always ensure your answers are specific, helpful, and actionable.
+
+Structure your response in clean, readable **Markdown** that works well with Tailwind CSS's `prose` styling. Be clear, organized, and visually appealing.
+
+Formatting guidelines:
+- Use `##` for main section headings (e.g., Job Roles, Skills, Education)
+- Use `###` for sub-sections (e.g., Core Skills, Tools, Core Tasks)
+- Use `-` for bullet points
+- Use `>` for tips, quotes, or suggestions
+- Ensure spacing between sections for readability
+- Use emojis to enhance tone and understanding, but keep them relevant
+
+Ensure:
+- No repeated or redundant roles
+- Clear separation between core content and tips
+- Bullet lists and spacing render correctly
+- Content is concise and scannable
+
+Output only the Markdown-formatted response.
+
 
 Query: {query}
 
@@ -107,37 +131,17 @@ Answer:"""
     response = groq_client.chat.completions.create(
         model="llama3-70b-8192",  # LLaMA model via Groq
         messages=[
-            {"role": "system", "content": "You are a helpful AI career assistant."},
+            {"role": "system", "content": "You are a chatbot named CareerCompass. You are a highly knowledgeable and supportive career assistant. You are assisting a user explore career options and make informed decisions based on their interests, education, skills, and preferences. Each time the user converses with you, make sure the context is professional and about their career and that you are providing a helpful response. If the user asks you to do something that is not about a career guidance you should refuse to respond. Keep responses concise yet informative. Use bullet points or numbered lists to break down complex topics into digestible steps."},
             {"role": "user", "content": prompt}
         ],
         max_tokens=500,
         temperature=0.7
     )
+
     
     answer = response.choices[0].message.content
     return {"query": query, "response": answer}
-    
-    # print(f"\nQuery: {query}")
-    # print("\nRetrieved Documents (Summarized):")
-    # for i in range(len(results['documents'][0])):
-    #     doc_lines = results['documents'][0][i].split('\n')
-    #     print(f"\nResult {i+1}:")
-    #     print(f"Job Code: {results['ids'][0][i]}")
-    #     print(f"Title: {results['metadatas'][0][i]['title']}")
-    #     print(f"Distance: {results['distances'][0][i]}")
-    #     print(f"Description: {doc_lines[1][12:][:200]}...")
-    #     print(f"Key Skills: {doc_lines[2][7:][:100]}...")
-    #     print(f"Education: {doc_lines[3][10:][:100]}...")
-    #     print(f"Work Activities: {doc_lines[4][14:][:100]}...")
-    #     print(f"Technical Skills: {doc_lines[7][15:][:100]}...")
-    #     print(f"Core Tasks: {doc_lines[8][11:][:100]}...")
-    #     print(f"Token Count: {results['metadatas'][0][i]['token_count']}")
-    #     print("-" * 50)
-    
-    # print("\nLLaMA Response:")
-    # print(answer)
-    # print("=" * 70)
-    # print(results["distances"][0])
+
 
 # print('Successful!')
 
