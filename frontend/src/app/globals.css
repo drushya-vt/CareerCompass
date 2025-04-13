@@ -136,7 +136,7 @@
   }
   
   .chat-side-nav {
-    @apply w-1/4 p-14 md:w-1/4 lg:w-1/4 flex flex-col items-center gap-8;
+    @apply w-1/4 p-6 md:w-1/4 lg:w-1/4 flex flex-col items-center gap-4;
     background-color: var(--primary-blue); 
     
   }
@@ -156,7 +156,7 @@
   .logo-name
   {
     @apply font-bold text-center text-white;
-    @apply sm:text-xl md:text-2xl lg:text-4xl;
+    @apply sm:text-sm md:text-lg lg:text-2xl;
     
   } 
 
@@ -166,7 +166,7 @@
   }
 
   .data-button
-  { @apply text-3xl font-bold;
+  { @apply text-base font-bold;
     color: var(--primary-blue);
     @apply flex-col;
   }
@@ -187,7 +187,7 @@
   }
 
   .user-input{
-    @apply w-[70%] h-auto p-2 text-4xl rounded-md text-black;
+    @apply w-[70%] h-auto p-1 text-sm rounded-md text-black;
     background-color: var(--gray); 
   }
 
@@ -199,7 +199,7 @@
 
   .user-query
   {
-    @apply w-full h-[30%] p-6 text-black;
+    @apply w-full h-[30%] p-2 text-black;
     background-color: var(--gray); 
     
   }
@@ -216,17 +216,16 @@
 
   /* chat messages */
   .user-message {
-    @apply w-[30%] text-white self-end p-8 font-bold rounded-lg;
-    background-color: var(--primary-blue); 
-    @apply sm:text-xl md:text-2xl lg:text-3xl;
+    @apply w-[30%] text-white self-end p-4 font-medium rounded-lg text-sm sm:text-sm md:text-sm lg:text-sm;
+    background-color: var(--primary-blue);
   }
   
   .bot-message {
-    @apply w-[60%] self-start p-8 rounded-lg;
-    background-color: var(--light-blue); 
+    @apply w-[60%] self-start p-6 rounded-lg text-sm sm:text-sm md:text-sm lg:text-sm;
+    background-color: var(--light-blue);
     color: var(--primary-blue);
-    @apply sm:text-xl md:text-2xl lg:text-3xl;
   }
+  
  
   
 }

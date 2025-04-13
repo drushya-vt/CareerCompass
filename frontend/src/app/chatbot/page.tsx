@@ -71,12 +71,12 @@ export default function Chatbot() {
 
       <div className="chat-side-nav">
           <div className="chat-header">
-          <div><Image src={logo} alt="CareerCompass Logo" className="w-20 h-30" /></div>
+          <div><Image src={logo} alt="CareerCompass Logo" className="w-10 h-30" /></div>
           <div><span className="logo-name">CareerCompass</span></div>
           </div>
           
           <div className="data-visualization-button">
-            <div><Image src={graph} alt="graph" className="w-20 h-30" /></div>
+            <div><Image src={graph} alt="graph" className="w-10 h-30" /></div>
           <div>
           <a href="https://public.tableau.com/views/CareerCompass/Overview?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link" 
           
@@ -84,7 +84,7 @@ export default function Chatbot() {
             <button type="submit" className="data-button">
             View Career Data Dashboard
           </button></a></div>
-          <div><Image src={arrow} alt="arrow" className="w-10 h-auto" /></div>
+          <div><Image src={arrow} alt="arrow" className="w-8 h-auto" /></div>
           </div>
           <div className="chat-history">
 
@@ -133,7 +133,7 @@ export default function Chatbot() {
             disabled={isMessageEmpty}
             className={`transition-opacity duration-200 ${
           isMessageEmpty ? 'opacity-50 cursor-not-allowed' : 'opacity-100'
-        }`}><Image src={send} alt="Send Button" className="w-20 h-auto" /></button>
+        }`}><Image src={send} alt="Send Button" className="w-10 h-auto" /></button>
             </form>
         </div>
       </div>
