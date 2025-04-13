@@ -26,7 +26,7 @@ app.add_middleware(
 )
 
 
-CHROMA_DB_PATH = r"C:\Users\mohin\OneDrive\Desktop\capstone\careervectorstorefinal"  # Path to your persistent ChromaDB from the creation script
+CHROMA_DB_PATH = r"careervectorstorefinal"  # Path to your persistent ChromaDB from the creation script
 chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
 openai_client = OpenAI(api_key="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")  # For query embedding
 groq_client = Groq(api_key="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")  # Groq API key to call LLaMA
@@ -98,13 +98,23 @@ Use the summarized job descriptions below as your primary knowledge source to an
 Base your answers strictly on the provided information, but if relevant, include industry-recognized certifications or skills that are commonly required or beneficial for the role.
 Always ensure your answers are specific, helpful, and actionable.
 
-Please format your response using **Markdown** for readability:
+Structure your response in clean, readable **Markdown** that works well with Tailwind CSS's `prose` styling. Be clear, organized, and visually appealing.
 
-- Use `**bold**` to highlight important terms or requirements.
-- Use `###` for key fields (e.g.,Title, Description Recommended Roles, Skills Needed).
-- Use bullet points (`-`) for lists of roles, skills, or tips.
-- Use `>` for additional notes, suggestions, or industry tips.
-- Use emojis where appropriate to enhance readability.
+Formatting guidelines:
+- Use `##` for main section headings (e.g., Job Roles, Skills, Education)
+- Use `###` for sub-sections (e.g., Core Skills, Tools, Core Tasks)
+- Use `-` for bullet points
+- Use `>` for tips, quotes, or suggestions
+- Ensure spacing between sections for readability
+- Use emojis to enhance tone and understanding, but keep them relevant
+
+Ensure:
+- No repeated or redundant roles
+- Clear separation between core content and tips
+- Bullet lists and spacing render correctly
+- Content is concise and scannable
+
+Output only the Markdown-formatted response.
 
 
 Query: {query}
