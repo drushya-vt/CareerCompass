@@ -16,7 +16,7 @@ if not GROQ_API_KEY:
     raise ValueError("❌ Missing GROQ_API_KEY in the .env file.")
 
 # Initialize paths
-CHROMA_DB_PATH = "/Users/siddhikasera/Desktop/career-compass/careervectorstorefinal"
+CHROMA_DB_PATH = "/Users/shubhamlaxmikantdeshmukh/Desktop/career_compass/careervectorstorefinal"
 CHAT_HISTORY_DIR = "chat_history"
 os.makedirs(CHAT_HISTORY_DIR, exist_ok=True)
 

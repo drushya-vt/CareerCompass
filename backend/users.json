@@ -22,5 +22,13 @@
     "siddhi20": {
         "password": "siddhi20",
         "email": "smk339@gmail.com"
+    },
+    "shubham": {
+        "password": "shubham123",
+        "email": "shubhamd23@vt.edu"
+    },
+    "shubhamd23": {
+        "password": "shubhamd23",
+        "email": "shubhamd23@vt.edu"
     }
 }

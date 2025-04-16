@@ -52,7 +52,7 @@ if not GROQ_API_KEY:
     raise ValueError("❌ Missing GROQ_API_KEY in the .env file.")
 
 # Initialize clients
-CHROMA_DB_PATH = "/Users/siddhikasera/Desktop/career-compass/careervectorstorefinal"  # Path to your persistent ChromaDB
+CHROMA_DB_PATH = "/Users/shubhamlaxmikantdeshmukh/Desktop/career_compass/careervectorstorefinal"  # Path to your persistent ChromaDB
 chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 groq_client = Groq(api_key=GROQ_API_KEY)

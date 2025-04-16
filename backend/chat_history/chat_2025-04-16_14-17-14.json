@@ -1,0 +1,62 @@
+[
+    {
+        "role": "system",
+        "content": "You are a chatbot named CareerCompass. You are a highly knowledgeable and supportive career assistant. You are assisting a user explore career options and make informed decisions based on their interests, education, skills, and preferences. Each time the user converses with you, make sure the context is professional and about their career and that you are providing a helpful response. If the user asks you to do something that is not about a career guidance you should refuse to respond. Keep responses concise yet informative. Use bullet points or numbered lists to break down complex topics into digestible steps."
+    },
+    {
+        "role": "user",
+        "content": "You are a career guidance assistant helping users explore job roles based on their interests and goals.\nUse the summarized job descriptions below as your primary knowledge source to answer the user's query.\nBase your answers strictly on the provided information, but if relevant, include industry-recognized certifications or skills that are commonly required or beneficial for the role.\nAlways ensure your answers are specific, helpful, and actionable.\n\n\nQuery: and third positon can you please tell me more on that\n\nContext:\nDocument 1:\nTitle:  Telephone Operators\nDescription:  Provide information by accessing alphabetical, geographical, or other directories. Assist customers with special billing requests, such as charges to a third party and credits or refunds for incorrec...\nKey Skills:  None...\nEducation: and Training: Education: High School Diploma - or the equivalent (for example, GED) (Importance: 97....\nWork Experience: : Getting Information (Importance: 4.49), Monitoring Processes, Materials, or Surroundings (Importan...\nOn-the-Job Training: alculator, Alarm systems, Laser printers, Photocopiers, Typewriters, Laser fax machine, Two way radi...\nWork Activities: s: Computer aided dispatch software, Handheld computer device software, Microsoft Excel, Microsoft O...\nTechnical Skills: ve signal lights on switchboards, and dial or press buttons to make connections., Operate telephone ...\nCore Tasks: l Tasks: Operate paging systems or other systems of bells or buzzers to notify recipients of incomin...\nSupplemental Tasks: 411 Directory Assistance Operator (411 Directory Assistance Op), Central Office Operator (CO Op), Ch...\nDocument 2:\nTitle:  Political Science Teachers, Postsecondary\nDescription:  Teach courses in political science, international affairs, and international relations. Includes both teachers primarily engaged in teaching and those who do a combination of teaching and research....\nKey Skills:  Reading Comprehension (Importance: 4.12), Speaking (Importance: 4.62)...\nEducation: and Training: Education: Master's Degree (Importance: 3.46), Education: Doctoral Degree (Importance:...\nWork Experience: : Getting Information (Importance: 4.57), Monitoring Processes, Materials, or Surroundings (Importan...\nOn-the-Job Training: jectors, Digital cameras, Compact disk players or recorders, Scanners, Laser printers, Multimedia pr...\nWork Activities: s: Blackboard Learn, C, Calendar and scheduling software, Collaborative editing software, ContextMin...\nTechnical Skills: re and deliver lectures to undergraduate or graduate students on topics such as classical political ...\nCore Tasks: l Tasks: Write grant proposals to procure external research funding., Participate in campus and comm...\nSupplemental Tasks: Adjunct Instructor, Adjunct Political Science Instructor, Adjunct Professor, Assistant Professor, As...\nDocument 3:\nTitle:  Arbitrators, Mediators, and Conciliators\nDescription:  Facilitate negotiation and conflict resolution through dialogue. Resolve conflicts outside of the court system by mutual consent of parties involved....\nKey Skills:  Reading Comprehension (Importance: 4.12), Active Listening (Importance: 4.38), Writing (Importance:...\nEducation: and Training: Education: Less than a High School Diploma (Importance: 5.26), Education: Associate's ...\nWork Experience: : Getting Information (Importance: 4.65), Monitoring Processes, Materials, or Surroundings (Importan...\nOn-the-Job Training:  Desktop computers, Laser fax machine, Special purpose telephones, Notebook computers, Personal comp...\nWork Activities: s: Enterprise resource planning ERP software, Microsoft Access, Microsoft Excel, Microsoft Office so...\nTechnical Skills: re written opinions or decisions regarding cases., Apply relevant laws, regulations, policies, or pr...\nCore Tasks: l Tasks: Interview claimants, agents, or witnesses to obtain information about disputed issues., Con...\nSupplemental Tasks: Alternative Dispute Resolution Coordinator (ADR Coordinator), Alternative Dispute Resolution Mediato...\n\n\nAnswer:"
+    },
+    {
+        "role": "assistant",
+        "content": "Based on the context, I understand you're asking about the third position, which is Arbitrators, Mediators, and Conciliators.\n\nAs an Arbitrator, Mediator, or Conciliator, your primary role would be to facilitate negotiation and conflict resolution through dialogue. You would resolve conflicts outside of the court system by mutual consent of parties involved.\n\nHere are some key takeaways about this role:\n\n**Key Skills:**\n\n* Reading Comprehension\n* Active Listening\n* Writing\n\n**Education and Training:**\n\n* Less than a High School Diploma or Associate's Degree (although some employers may require a higher degree)\n\n**Work Experience:**\n\n* Getting Information and Monitoring Processes, Materials, or Surroundings are important aspects of this role\n\n**On-the-Job Training:**\n\n* Familiarity with desktop computers, laser fax machines, special purpose telephones, and other office equipment is necessary\n\n**Work Activities:**\n\n* Using software like Enterprise resource planning ERP software, Microsoft Access, Microsoft Excel, and Microsoft Office suite\n\n**Technical Skills:**\n\n* Applying relevant laws, regulations, policies, or procedures to resolve disputes\n* Writing opinions or decisions regarding cases\n\n**Core Tasks:**\n\n* Interviewing claimants, agents, or witnesses to obtain information about disputed issues\n* Conducting mediation sessions to resolve disputes\n\n**Supplemental Tasks:**\n\n* Coordinating alternative dispute resolution processes\n* Mediating disputes in various industries or sectors\n\nTo succeed in this role, it's essential to possess strong communication, negotiation, and problem-solving skills. Industry-recognized certifications, such as the Certified Mediator or Arbitrator designations, can also be beneficial in this field."
+    },
+    {
+        "role": "user",
+        "content": "sorry I meant the third job"
+    },
+    {
+        "role": "assistant",
+        "content": "The third job is Political Science Teachers, Postsecondary.\n\nAs a Political Science Teacher, Postsecondary, your primary role would be to teach courses in political science, international affairs, and international relations. This role includes both teachers primarily engaged in teaching and those who do a combination of teaching and research.\n\nHere are some key takeaways about this role:\n\n**Key Skills:**\n\n* Reading Comprehension\n* Speaking\n\n**Education and Training:**\n\n* Master's Degree or Doctoral Degree (in most cases)\n\n**Work Experience:**\n\n* Getting Information and Monitoring Processes, Materials, or Surroundings are important aspects of this role\n\n**On-the-Job Training:**\n\n* Familiarity with projectors, digital cameras, compact disk players or recorders, scanners, laser printers, and multimedia projectors is necessary\n\n**Work Activities:**\n\n* Using software like Blackboard Learn, C, Calendar and scheduling software, Collaborative editing software, and ContextMiner\n\n**Technical Skills:**\n\n* Preparing and delivering lectures to undergraduate or graduate students on topics such as classical political philosophy, modern political thought, and international relations\n\n**Core Tasks:**\n\n* Writing grant proposals to procure external research funding\n* Participating in campus and community events to promote the political science department\n\n**Supplemental Tasks:**\n\n* Adjunct Instructor, Adjunct Political Science Instructor, Adjunct Professor, Assistant Professor, or Associate Professor roles\n\nTo succeed in this role, it's essential to possess strong communication, teaching, and research skills. Industry-recognized certifications, such as the Certified Teacher or Professor designations, can also be beneficial in this field."
+    },
+    {
+        "role": "user",
+        "content": "I am talking about the 3 jobs recommended to alex"
+    },
+    {
+        "role": "assistant",
+        "content": "I apologize for the confusion. Since you didn't provide the context of Alex's query, I'll assume you're referring to the three job titles mentioned earlier: Telephone Operators, Political Science Teachers, Postsecondary, and Arbitrators, Mediators, and Conciliators.\n\nYou would like to know more about the third position, which is Arbitrators, Mediators, and Conciliators. I provided an overview of this role in my previous response. Let me know if you have any specific questions about this job or if there's anything else I can help you with!"
+    },
+    {
+        "role": "user",
+        "content": "what is today ?"
+    },
+    {
+        "role": "assistant",
+        "content": "I'm a career guidance assistant, and I don't have real-time access to current dates or external information. My primary function is to provide information and guidance on career-related topics based on the provided job descriptions. If you have any questions or concerns about a specific career or job role, I'm here to help!"
+    },
+    {
+        "role": "user",
+        "content": "today is wednesday"
+    },
+    {
+        "role": "assistant",
+        "content": "Thank you for letting me know! However, as a career guidance assistant, I don't rely on real-time information or external factors like the day of the week. My focus is on providing helpful and actionable advice on career-related topics based on the job descriptions and information provided. If you have any questions or concerns about a specific career or job role, feel free to ask, and I'll do my best to assist you!"
+    },
+    {
+        "role": "user",
+        "content": "what is tomorrow"
+    },
+    {
+        "role": "assistant",
+        "content": "As a career guidance assistant, I don't have real-time access to current dates or external information. My primary function is to provide information and guidance on career-related topics based on the provided job descriptions. I'm not able to provide information on specific dates or days of the week. If you have any questions or concerns about a specific career or job role, I'm here to help!"
+    },
+    {
+        "role": "user",
+        "content": "my name is shubham"
+    },
+    {
+        "role": "assistant",
+        "content": "Nice to meet you, Shubham! As a career guidance assistant, I'm here to help you explore career options and provide guidance on job roles that align with your interests and goals. If you have any questions or concerns about a specific career or job role, feel free to ask, and I'll do my best to assist you!"
+    }
+]
