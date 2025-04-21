@@ -915,16 +915,6 @@ body {
   display: flex;
   gap: 1.5rem;
 }
-.login-button {
-  border-radius: 0.375rem;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  font-weight: 500;
-    background-color: var(--white);
-    color: var(--primary-blue);
-}
 /* Main Content Styles */
 .main-container {
   display: flex;
@@ -1348,6 +1338,32 @@ body {
 /* Targeting all headings in .prose */
 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
   color: var(--primary-blue); /* Set all headings to primary-blue */
+}
+.chat-history button,
+  .chat-history ul li,
+  .chat-history input,
+  .chat-history p {
+    color: var(--white);
+  }
+.chat-history input {
+  border-radius: 0.375rem;
+  border-width: 1px;
+  --tw-border-opacity: 1;
+  border-color: rgb(255 255 255 / var(--tw-border-opacity, 1));
+  background-color: transparent;
+  padding: 0.5rem;
+}
+.chat-history ul li {
+  margin-bottom: 0.25rem;
+}
+.chat-history button {
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  text-decoration-line: underline;
+}
+.chat-history p {
+  margin-top: 0.5rem;
+  font-weight: 600;
 }
 .relative {
   position: relative;
