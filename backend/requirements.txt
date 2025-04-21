@@ -6,3 +6,5 @@ openai
 tiktoken
 uvicorn
 langchain-openai
+react-markdown
+remark-gfm

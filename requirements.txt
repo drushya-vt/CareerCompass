@@ -5,3 +5,5 @@ groq
 openai
 tiktoken
 uvicorn
+react-markdown
+remark-gfm
