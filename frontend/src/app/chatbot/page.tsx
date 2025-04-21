@@ -75,7 +75,7 @@ export default function Chatbot() {
           <div><span className="logo-name">CareerCompass</span></div>
           </div>
           
-          <div className="data-visualization-button">
+          {/* <div className="data-visualization-button">
             <div><Image src={graph} alt="graph" className="w-10 h-30" /></div>
           <div>
           <a href="https://public.tableau.com/views/CareerCompass/Overview?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link" 
@@ -85,7 +85,27 @@ export default function Chatbot() {
             View Career Data Dashboard
           </button></a></div>
           <div><Image src={arrow} alt="arrow" className="w-8 h-auto" /></div>
-          </div>
+          </div> */}
+          <div className="data-visualization-button">
+        <div>
+          <Image src={graph} alt="graph" className="w-10 h-30" />
+        </div>
+
+        <div>
+          <Link href="/datavisualization" target="_blank" rel="noopener noreferrer">
+            <button
+              type="button"
+              className="data-button "
+            >
+              View Career Data Dashboard
+            </button>
+          </Link>
+        </div>
+
+        <div>
+          <Image src={arrow} alt="arrow" className="w-8 h-auto" />
+        </div>
+      </div>
           <div className="chat-history">
 
           </div>
