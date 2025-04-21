@@ -153,6 +153,7 @@ import send from "../../resources/send.png";
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import Header from "@/components/Header";
 
 interface Message {
   type: string;
@@ -255,6 +256,8 @@ export default function Chatbot() {
   const isMessageEmpty = userInput.trim() === '';
 
   return (
+    <div>
+      <Header/>
     <div className="outer-interface">
       <div className="chat-side-nav">
         <div className="chat-header">
