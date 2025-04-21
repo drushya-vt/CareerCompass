@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import Header from "@/components/Header";
 
 
 
@@ -68,13 +69,14 @@ export default function Chatbot() {
   const isMessageEmpty = userInput.trim() === '';
 
   return (
+    <div>
+      <Header/>
     <div className="outer-interface">
-
       <div className="chat-side-nav">
-          <div className="chat-header">
+          {/* <div className="chat-header"> 
           <div><Image src={logo} alt="CareerCompass Logo" className="w-10 h-30" /></div>
           <div><span className="logo-name">CareerCompass</span></div>
-          </div>
+          </div> */}
           
           <div className="data-visualization-button">
             <div><Image src={graph} alt="graph" className="w-10 h-30" /></div>
@@ -141,6 +143,7 @@ export default function Chatbot() {
             </form>
         </div>
       </div>
+    </div>
     </div>
   );
 }

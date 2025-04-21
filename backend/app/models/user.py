@@ -8,3 +8,6 @@ class UserRequest(BaseModel):
 class LoginRequest(BaseModel):
     username: str
     password: str
+
+class LogoutRequest(BaseModel):
+    username: str

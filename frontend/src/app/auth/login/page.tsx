@@ -27,6 +27,7 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
+        localStorage.setItem('username', username);
         router.push("/chatbot");
       } else {
         if (Array.isArray(data.detail)) {

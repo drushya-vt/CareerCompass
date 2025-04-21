@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.core.config import logger
-from app.models.user import UserRequest, LoginRequest
+from app.models.user import UserRequest, LoginRequest, LogoutRequest
 from app.core.auth import fake_users_db, logged_in_users, save_users
 
 router = APIRouter()
@@ -44,7 +44,7 @@ async def login(user: LoginRequest):
     )
 
 @router.post("/logout")
-async def signout(user: UserRequest):
+async def signout(user: LogoutRequest):
     if user.username in logged_in_users:
         del logged_in_users[user.username]  # Remove user from the logged-in list
         return {"message": f"User {user.username} signed out successfully"}
