@@ -1,6 +1,6 @@
 "use client"
 import Image from "next/image";
-// import Link from "next/link";
+import Link from "next/link";
 import logo from "../../resources/logo.png";
 import arrow from "../../resources/arrow.png";
 import graph from "../../resources/graph.png";
@@ -77,18 +77,27 @@ export default function Chatbot() {
           </div>
           
           <div className="data-visualization-button">
-            <div><Image src={graph} alt="graph" className="w-10 h-30" /></div>
-          <div>
-          <a href="https://public.tableau.com/views/CareerCompass/Overview?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link" 
-          
-    >
-            <button type="submit" className="data-button">
-            View Career Data Dashboard
-          </button></a></div>
-          <div><Image src={arrow} alt="arrow" className="w-8 h-auto" /></div>
-          </div>
-          <div className="chat-history">
+        <div>
+          <Image src={graph} alt="graph" className="w-10 h-30" />
+        </div>
 
+        <div>
+          <Link href="/datavisualization" target="_blank" rel="noopener noreferrer">
+            <button
+              type="button"
+              className="data-button "
+            >
+              View Career Data Dashboard
+            </button>
+          </Link>
+        </div>
+
+        <div>
+          <Image src={arrow} alt="arrow" className="w-8 h-auto" />
+        </div>
+      </div>
+          
+          <div className="chat-history">
           </div>
        
       </div>
