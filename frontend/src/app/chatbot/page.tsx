@@ -1,6 +1,6 @@
 "use client"
 import Image from "next/image";
-import Link from "next/link";
+// import Link from "next/link";
 import logo from "../../resources/logo.png";
 import arrow from "../../resources/arrow.png";
 import graph from "../../resources/graph.png";
@@ -8,6 +8,7 @@ import send from "../../resources/send.png";
 import { useState } from 'react';
 import { useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 
 
@@ -120,9 +121,12 @@ export default function Chatbot() {
           {messages.map((msg, index) => (
   <div key={index} className={msg.type === 'user' ? 'user-message' : 'bot-message'}>
     {msg.type === 'bot' ? (
-      <ReactMarkdown>
+      <div className="prose">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>
         {msg.text}
+       
       </ReactMarkdown>
+    </div>
    
 
     ) : (
