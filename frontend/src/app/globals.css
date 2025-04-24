@@ -34,7 +34,7 @@
   /* Header Styles */
   .header {
     @apply custom-shadow p-4;
-    background-color: var(--primary-blue);
+    /* background-color: var(--primary-blue); */
     color: var(--white);
   }
 
@@ -62,8 +62,8 @@
 
   /* Main Content Styles */
   .main-container {
-    @apply flex flex-col items-center justify-center min-h-screen text-center p-4;  /* Full height of the screen */
-    background-color: var(--primary-blue);
+    @apply flex flex-col items-center justify-center min-h-screen text-center p-2;  /* Full height of the screen */
+    /* background-color: var(--primary-blue); */
   }
 
   .content-container {
@@ -71,17 +71,27 @@
   }
 
   .main-heading {
-    @apply text-4xl font-bold mb-4;
+    @apply text-5xl font-bold mb-4;
+    color: var(--black);  /* White text on blue background */
+  }
+
+  .second-heading {
+    @apply text-6xl font-bold mb-4;
     color: var(--white);  /* White text on blue background */
   }
 
   .sub-heading {
-    @apply text-2xl mb-8;
+    @apply text-2xl mb-8 font-bold;
     color: var(--white);  /* White text on blue background */
   }
 
   .button-container {
     @apply flex flex-col gap-4 w-64 mx-auto;
+  }
+  
+  .getstarted-button {
+    @apply py-3 px-6 rounded-md text-lg font-medium text-white transition-colors;
+    background-color:black;
   }
 
   .primary-button {
