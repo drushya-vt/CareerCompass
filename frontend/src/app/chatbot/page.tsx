@@ -79,17 +79,13 @@ export default function Chatbot() {
   };
 
   // Handler to resume a conversation and update UI with its messages
-  const resumeChat = async () => {
-    if (!resumeFile.trim()) return;
+  const resumeChatFromFile = async (fileName: string) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/resume/${resumeFile.trim()}`, { method: 'GET' });
+      const res = await fetch(`http://127.0.0.1:8000/resume/${fileName}`, { method: 'GET' });
       const data = await res.json();
       setInfoMessage(data.message || "Chat resumed.");
-      // Map the returned conversation to the messages state.
-      // Each object in "conversation" is expected to have "role" and "content"
       const resumedMessages: Message[] = data.conversation.map(
         (msg: { role: string; content: string }) => {
-          // Optionally, you can ignore the system message if you don't want it displayed.
           if (msg.role === "system") {
             return { type: 'system', text: msg.content };
           } else if (msg.role === "user") {
@@ -106,6 +102,7 @@ export default function Chatbot() {
       setInfoMessage("Error resuming chat.");
     }
   };
+  
 
   const isMessageEmpty = userInput.trim() === '';
 
@@ -139,20 +136,29 @@ export default function Chatbot() {
         </div>
         <div className="chat-history">
           <button onClick={fetchHistory}>Refresh History</button>
-          <ul>
-            {savedChats.map((file, idx) => (
-              <li key={idx}>{file}</li>
-            ))}
+
+          <ul className="chat-history-list">
+            {savedChats.map((file, idx) => {
+              const readableName = file
+                .replace("chat_", "")
+                .replace(".json", "")
+                .replace(/_/g, " ")
+                .replace(/-/g, ":");
+
+              const isActive = infoMessage.includes(file); // check if current chat was resumed
+
+              return (
+                <li key={idx}>
+                  <button
+                    className={`chat-history-item ${isActive ? "active" : ""}`}
+                    onClick={() => resumeChatFromFile(file)}
+                  >
+                    {readableName}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
-          <div>
-            <input
-              type="text"
-              placeholder="Enter filename to resume (e.g., chat_2025-04-16_11-30-00.json)"
-              value={resumeFile}
-              onChange={(e) => setResumeFile(e.target.value)}
-            />
-            <button onClick={resumeChat}>Resume Chat</button>
-          </div>
           {infoMessage && <p>{infoMessage}</p>}
         </div>
       </div>

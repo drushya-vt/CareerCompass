@@ -1,7 +1,0 @@
-fastapi
-pydantic
-chromadb
-groq
-openai
-tiktoken
-uvicorn

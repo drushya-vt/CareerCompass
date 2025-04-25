@@ -277,5 +277,27 @@
   .chat-history p {
     @apply mt-2 font-semibold;
   }
+
+  .chat-history-list {
+    @apply flex flex-col gap-3 w-full mt-2;
+  }
+  
+  .chat-history-item {
+    @apply w-full px-4 py-3 rounded-md font-medium text-sm text-center tracking-wide transition-colors duration-200 border;
+    background-color: transparent;
+    border-color: var(--white);
+    color: var(--white);
+  }
+  
+  .chat-history-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .chat-history-item.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    font-weight: 700;
+    text-decoration: underline;
+  }
+  
   
 }

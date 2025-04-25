@@ -1,5 +1,6 @@
 # backend/app/api/chat.py
-
+import os
+import json
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import json
@@ -27,7 +28,11 @@ if not GROQ_API_KEY:
     raise ValueError("❌ Missing GROQ_API_KEY in the .env file.")
 
 # Initialize clients and models
-CHROMA_DB_PATH = "/Users/shubhamlaxmikantdeshmukh/Desktop/career_compass/careervectorstorefinal"
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+CHROMA_DB_PATH = os.path.join(BASE_DIR, "careervectorstorefinal")
+chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)  # ✅ Initialize first
+collections = chroma_client.list_collections()  # ✅ Now this is valid
 chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 groq_client = Groq(api_key=GROQ_API_KEY)
