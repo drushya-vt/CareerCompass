@@ -1,4 +1,5 @@
-import TableauEmbed from "@/components/TableauEmbed";
+// app/datavisualization/page.tsx
+import TableauEmbed from "../../components/TableauEmbed";
 
 export default function DataVisualizationPage() {
   return (

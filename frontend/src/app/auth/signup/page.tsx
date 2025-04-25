@@ -47,7 +47,7 @@ export default function Signup() {
     <div>
       <Header />
       <div className="auth-container">
-        <div className="auth-form-card">
+        <div className="auth-form-card header bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%]">
           <h1 className="auth-heading">Sign Up</h1>
           {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
           <form onSubmit={handleSubmit} className="form-container">
