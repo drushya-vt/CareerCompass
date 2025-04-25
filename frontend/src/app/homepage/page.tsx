@@ -5,6 +5,7 @@ import chatbot from "../../resources/chatbot.png";
 import chatbot2 from "../../resources/chatbot2.png";
 import dashboard from "../../resources/dashboard.png";
 import chatpreview from "../../resources/chatpreview.png";
+import chat3 from "../../resources/chat3.png";
 
 export default function Home() {
   return (
@@ -35,7 +36,7 @@ export default function Home() {
     {/* Chatbot Image */}
     <div className="flex-1 flex justify-center">
       <Image
-        src={chatpreview}
+        src={chat3}
         alt="Chatbot Preview"
         width={800}
         height={800}

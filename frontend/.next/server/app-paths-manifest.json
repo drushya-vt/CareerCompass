@@ -1,8 +1,0 @@
-{
-  "/chatbot/page": "app/chatbot/page.js",
-  "/homepage/page": "app/homepage/page.js",
-  "/auth/signup/page": "app/auth/signup/page.js",
-  "/page": "app/page.js",
-  "/auth/login/page": "app/auth/login/page.js",
-  "/datavisualization/page": "app/datavisualization/page.js"
-}
