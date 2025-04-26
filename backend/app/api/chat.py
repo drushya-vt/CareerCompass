@@ -1,184 +1,102 @@
+# backend/app/api/chat.py
 import os
 import json
-from groq import Groq
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+import json
+import os
+import datetime
 import logging
 import chromadb
-import sys
+from groq import Groq
 from openai import OpenAI
-from fastapi import APIRouter, HTTPException
-from app.core.config import logger, CHAT_HISTORY_DIR
-from app.models.chat import ChatRequest
-from app.models.chat import QueryRequest
-from app.core.config import SYSTEM_PROMPT
-from app.core.config import logger, CHAT_HISTORY_DIR
-from app.services.chat import send_message, save_conversation, conversation_history
-from langchain.schema import SystemMessage, HumanMessage, AIMessage
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
+from langchain.schema import SystemMessage, HumanMessage, AIMessage
 
+# Configure logging
+logger = logging.getLogger(__name__)
 
-# Initialize clients with persistent storage
-# CHROMA_DB_PATH = "/Users/siddhikasera/Desktop/career-compass/careervectorstorefinal"
-# chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
-
-
+# Create router
+router = APIRouter()
 
 # Load environment variables
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
 if not GROQ_API_KEY:
     raise ValueError("❌ Missing GROQ_API_KEY in the .env file.")
 
-# Initialize paths
-CHROMA_DB_PATH = "/Users/siddhikasera/Desktop/career-compass/careervectorstorefinal"
-CHAT_HISTORY_DIR = "chat_history"
-os.makedirs(CHAT_HISTORY_DIR, exist_ok=True)
-
-# Initialize clients
-chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
+# Initialize clients and models
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+CHROMA_DB_PATH = os.path.join(BASE_DIR, "careervectorstorefinal")
+chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)  # ✅ Initialize first
+collections = chroma_client.list_collections()  # ✅ Now this is valid
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 groq_client = Groq(api_key=GROQ_API_KEY)
 
-# Initialize LangChain model
+
 chat_model = ChatOpenAI(
     model="llama3-70b-8192",
     openai_api_key=GROQ_API_KEY,
-    openai_api_base="https://api.groq.com/openai/v1"
+    openai_api_base="https://api.groq.com/openai/v1",
+    max_tokens=800,
+    temperature=0.7
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler(sys.stdout)]
-)
-logger = logging.getLogger(__name__)
+# Set up chat history directory and system prompt
+CHAT_HISTORY_DIR = "chat_history"
+os.makedirs(CHAT_HISTORY_DIR, exist_ok=True)
+SYSTEM_PROMPT = "You are a chatbot named CareerCompass. You are a highly knowledgeable and supportive career assistant. You are assisting a user explore career options and make informed decisions based on their interests, education, skills, and preferences. Each time the user converses with you, make sure the context is professional and about their career and that you are providing a helpful response. If the user asks you to do something that is not about a career guidance you should refuse to respond. Keep responses concise yet informative. Use bullet points or numbered lists to break down complex topics into digestible steps."
+conversation_history = [SystemMessage(content=SYSTEM_PROMPT)]
 
-# CORS settings
-def get_cors_settings():
-    return {
-        "allow_origins": ["*"],
-        "allow_credentials": True,
-        "allow_methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["*"],
-    }
+# Request models
+class QueryRequest(BaseModel):
+    query: str
 
-# System prompt for chat
-SYSTEM_PROMPT = "You are a helpful AI assistant. Answer strictly based on the given context."
+class ChatRequest(BaseModel):
+    query: str
 
-
-router = APIRouter()
-
-def query_vector_store(query, n_results=3):
-    # Get the collection created earlier
+# Helper function: Query the vector store
+def query_vector_store(query: str, n_results: int = 3):
     collection = chroma_client.get_collection(name="job_descriptions_batch")
-    
-    # Generate query embedding using OpenAI
     query_embedding = openai_client.embeddings.create(
         model="text-embedding-ada-002",
         input=query
     ).data[0].embedding
-    
-    # Query the ChromaDB collection
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=n_results
-    )
-    
-    return results
+    return collection.query(query_embeddings=[query_embedding], n_results=n_results)
+
 
 @router.post("/chatbot")
 async def chatbot_endpoint(request: ChatRequest):
+    global conversation_history
     try:
-        return send_message(request.query)
-    except Exception as e:
-        logger.error(f"Error in chatbot endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.post("/exit")
-async def exit_chat():
-    try:
-        filename = save_conversation()
-        global conversation_history
-        conversation_history = [SystemMessage(content=SYSTEM_PROMPT)]
-        return {"message": "Conversation saved and chat reset.", "file": filename}
-    except Exception as e:
-        logger.error(f"Error in exit chat: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/history")
-async def list_saved_chats():
-    try:
-        files = [f for f in os.listdir(CHAT_HISTORY_DIR) if f.endswith(".json")]
-        return {"saved_chats": files}
-    except Exception as e:
-        logger.error(f"Error listing saved chats: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/resume/{filename}")
-async def resume_conversation(filename: str):
-    try:
-        filepath = os.path.join(CHAT_HISTORY_DIR, filename)
-        if not os.path.exists(filepath):
-            raise HTTPException(status_code=404, detail="Conversation not found.")
-
-        with open(filepath, "r", encoding="utf-8") as f:
-            saved_data = json.load(f)
-
-        global conversation_history
-        conversation_history = []
-        for message in saved_data:
-            role = message["role"]
-            content = message["content"]
-            if role == "system":
-                conversation_history.append(SystemMessage(content=content))
-            elif role == "user":
-                conversation_history.append(HumanMessage(content=content))
-            elif role == "assistant":
-                conversation_history.append(AIMessage(content=content))
-
-        logger.info(f"Conversation '{filename}' resumed successfully")
-        return {"message": f"Conversation '{filename}' resumed successfully."}
-    except Exception as e:
-        logger.error(f"Error resuming conversation: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/query")
-async def process_query(request: QueryRequest):
-    query = request.query  # Extract the query from the request body
-    results = query_vector_store(query, n_results=3)
-    
-
-    
-    # results = query_vector_store(query, n_results)
-    
-    # Summarize context to focus on key fields
-    context = ""
-
-    for i, doc in enumerate(results['documents'][0][:3]):
-         doc_lines = doc.split('\n')  # Split document into lines
-         context += f"### 📄 Document {i+1}\n"
-         context += f"**🧑‍💼 Title:** {doc_lines[0][6:]}\n"
-         context += f"**📘 Description:** {doc_lines[1][12:][:200]}...\n"
-         context += f"**🛠️ Key Skills:**\n- {doc_lines[2][7:][:100]}...\n"
-         context += f"**🎓 Education:**\n- {doc_lines[3][10:][:100]}...\n"
-         context += f"**💼 Work Experience:**\n- {doc_lines[4][15:][:100]}...\n" if len(doc_lines) > 4 else "**💼 Work Experience:**\n- None\n"
-         context += f"**🧪 On-the-Job Training:**\n- {doc_lines[5][21:][:100]}...\n" if len(doc_lines) > 5 else "**🧪 On-the-Job Training:**\n- None\n"
-         context += f"**🧰 Work Activities:**\n- {doc_lines[6][15:][:100]}...\n" if len(doc_lines) > 6 else "**🧰 Work Activities:**\n- None\n"
-         context += f"**🔧 Technical Skills:**\n- {doc_lines[7][17:][:100]}...\n" if len(doc_lines) > 7 else "**🔧 Technical Skills:**\n- None\n"
-         context += f"**📋 Core Tasks:**\n- {doc_lines[8][11:][:100]}...\n" if len(doc_lines) > 8 else "**📋 Core Tasks:**\n- None\n"
-         context += f"**➕ Supplemental Tasks:**\n- {doc_lines[9][18:][:100]}...\n" if len(doc_lines) > 9 else "**➕ Supplemental Tasks:**\n- None\n"
-         context += "\n"
-
-   
-
+        if len(conversation_history) == 1:  # Only the system prompt exists
+            context_results = query_vector_store(request.query, n_results=3)
+            if not context_results or not context_results.get("documents") or not context_results["documents"][0]:
+                fallback = ("I couldn't find much information on that topic. "
+                            "Try refining your query or check specialized job platforms.")
+                return {"query": request.query, "response": fallback}
+            context_str = ""
+            for i, doc in enumerate(context_results['documents'][0][:3]):
+                doc_lines = doc.split('\n')  # Split document into lines
+                context += f"### 📄 Document {i+1}\n"
+                context += f"**🧑‍💼 Title:** {doc_lines[0][6:]}\n"
+                context += f"**📘 Description:** {doc_lines[1][12:][:200]}...\n"
+                context += f"**🛠️ Key Skills:**\n- {doc_lines[2][7:][:100]}...\n"
+                context += f"**🎓 Education:**\n- {doc_lines[3][10:][:100]}...\n"
+                context += f"**💼 Work Experience:**\n- {doc_lines[4][15:][:100]}...\n" if len(doc_lines) > 4 else "**💼 Work Experience:**\n- None\n"
+                context += f"**🧪 On-the-Job Training:**\n- {doc_lines[5][21:][:100]}...\n" if len(doc_lines) > 5 else "**🧪 On-the-Job Training:**\n- None\n"
+                context += f"**🧰 Work Activities:**\n- {doc_lines[6][15:][:100]}...\n" if len(doc_lines) > 6 else "**🧰 Work Activities:**\n- None\n"
+                context += f"**🔧 Technical Skills:**\n- {doc_lines[7][17:][:100]}...\n" if len(doc_lines) > 7 else "**🔧 Technical Skills:**\n- None\n"
+                context += f"**📋 Core Tasks:**\n- {doc_lines[8][11:][:100]}...\n" if len(doc_lines) > 8 else "**📋 Core Tasks:**\n- None\n"
+                context += f"**➕ Supplemental Tasks:**\n- {doc_lines[9][18:][:100]}...\n" if len(doc_lines) > 9 else "**➕ Supplemental Tasks:**\n- None\n"
+                context += "\n"
    
     
     # Construct prompt with summarized context
-    prompt = f"""You are a career guidance assistant helping users explore job roles based on their interests and goals.
+            full_prompt = f"""You are a career guidance assistant helping users explore job roles based on their interests and goals.
 Use the summarized job descriptions below as your primary knowledge source to answer the user's query.
 Base your answers strictly on the provided information, but if relevant, include industry-recognized certifications or skills that are commonly required or beneficial for the role.
 Always ensure your answers are specific, helpful, and actionable.
@@ -202,27 +120,166 @@ Ensure:
 Output only the Markdown-formatted response.
 
 
-Query: {query}
+Query: {request.query}
 
 Context:
-{context}
+{context_str}
 
 Answer:"""
+            conversation_history.append(HumanMessage(content=full_prompt))
+        else:
+            conversation_history.append(HumanMessage(content=request.query))
+        
+        assistant_reply = chat_model.invoke(conversation_history)
+        conversation_history.append(assistant_reply)
+        return {"query": request.query, "response": assistant_reply.content}
+    except Exception as e:
+        logger.error(f"Error in chatbot endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Endpoint: Save and reset conversation
+@router.post("/exit")
+async def exit_chat():
+    global conversation_history
+    try:
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"chat_{timestamp}.json"
+        filepath = os.path.join(CHAT_HISTORY_DIR, filename)
+        history_data = [
+            {"role": "system", "content": conversation_history[0].content}
+        ] + [
+            {"role": "user" if isinstance(msg, HumanMessage) else "assistant", "content": msg.content}
+            for msg in conversation_history[1:]
+        ]
+        with open(filepath, "w", encoding="utf-8") as file:
+            json.dump(history_data, file, indent=4)
+        logger.info(f"Chat history saved as: {filepath}")
+        conversation_history = [SystemMessage(content=SYSTEM_PROMPT)]
+        return {"message": "Conversation saved and chat reset.", "file": filename}
+    except Exception as e:
+        logger.error(f"Error in exit chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Endpoint: List saved chat histories
+@router.get("/history")
+async def list_saved_chats():
+    try:
+        files = [f for f in os.listdir(CHAT_HISTORY_DIR) if f.endswith(".json")]
+        return {"saved_chats": files}
+    except Exception as e:
+        logger.error(f"Error listing saved chats: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Endpoint: Resume a saved conversation
+@router.get("/resume/{filename}")
+async def resume_conversation(filename: str):
+    try:
+        filepath = os.path.join(CHAT_HISTORY_DIR, filename)
+        if not os.path.exists(filepath):
+            raise HTTPException(status_code=404, detail="Conversation not found.")
+        with open(filepath, "r", encoding="utf-8") as f:
+            saved_data = json.load(f)
+
+        global conversation_history
+        conversation_history = []
+        for message in saved_data:
+            role = message["role"]
+            content = message["content"]
+            if role == "system":
+                conversation_history.append(SystemMessage(content=content))
+            elif role == "user":
+                conversation_history.append(HumanMessage(content=content))
+            elif role == "assistant":
+                conversation_history.append(AIMessage(content=content))
+
+        logger.info(f"Conversation '{filename}' resumed successfully")
+        # Return both the message and the raw conversation data
+        return {
+            "message": f"Conversation '{filename}' resumed successfully.",
+            "conversation": saved_data
+        }
+    except Exception as e:
+        logger.error(f"Error resuming conversation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# @router.post("/query")
+# async def process_query(request: QueryRequest):
+#     query = request.query  # Extract the query from the request body
+#     results = query_vector_store(query, n_results=3)
     
-    # prompt_tokens = len(encoder.encode(prompt))
-    # print(f"Total prompt token count (query + context): {prompt_tokens}")
-    
-    # Use Groq API to call LLaMA model
-    response = groq_client.chat.completions.create(
-        model="llama3-70b-8192",  # LLaMA model via Groq
-        messages=[
-            {"role": "system", "content": "You are a chatbot named CareerCompass. You are a highly knowledgeable and supportive career assistant. You are assisting a user explore career options and make informed decisions based on their interests, education, skills, and preferences. Each time the user converses with you, make sure the context is professional and about their career and that you are providing a helpful response. If the user asks you to do something that is not about a career guidance you should refuse to respond. Keep responses concise yet informative. Use bullet points or numbered lists to break down complex topics into digestible steps."},
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=500,
-        temperature=0.7
-    )
 
     
-    answer = response.choices[0].message.content
-    return {"query": query, "response": answer}
+#     # results = query_vector_store(query, n_results)
+    
+#     # Summarize context to focus on key fields
+#     context = ""
+
+#     for i, doc in enumerate(results['documents'][0][:3]):
+#          doc_lines = doc.split('\n')  # Split document into lines
+#          context += f"### 📄 Document {i+1}\n"
+#          context += f"**🧑‍💼 Title:** {doc_lines[0][6:]}\n"
+#          context += f"**📘 Description:** {doc_lines[1][12:][:200]}...\n"
+#          context += f"**🛠️ Key Skills:**\n- {doc_lines[2][7:][:100]}...\n"
+#          context += f"**🎓 Education:**\n- {doc_lines[3][10:][:100]}...\n"
+#          context += f"**💼 Work Experience:**\n- {doc_lines[4][15:][:100]}...\n" if len(doc_lines) > 4 else "**💼 Work Experience:**\n- None\n"
+#          context += f"**🧪 On-the-Job Training:**\n- {doc_lines[5][21:][:100]}...\n" if len(doc_lines) > 5 else "**🧪 On-the-Job Training:**\n- None\n"
+#          context += f"**🧰 Work Activities:**\n- {doc_lines[6][15:][:100]}...\n" if len(doc_lines) > 6 else "**🧰 Work Activities:**\n- None\n"
+#          context += f"**🔧 Technical Skills:**\n- {doc_lines[7][17:][:100]}...\n" if len(doc_lines) > 7 else "**🔧 Technical Skills:**\n- None\n"
+#          context += f"**📋 Core Tasks:**\n- {doc_lines[8][11:][:100]}...\n" if len(doc_lines) > 8 else "**📋 Core Tasks:**\n- None\n"
+#          context += f"**➕ Supplemental Tasks:**\n- {doc_lines[9][18:][:100]}...\n" if len(doc_lines) > 9 else "**➕ Supplemental Tasks:**\n- None\n"
+#          context += "\n"
+
+   
+
+   
+    
+#     # Construct prompt with summarized context
+#     prompt = f"""You are a career guidance assistant helping users explore job roles based on their interests and goals.
+# Use the summarized job descriptions below as your primary knowledge source to answer the user's query.
+# Base your answers strictly on the provided information, but if relevant, include industry-recognized certifications or skills that are commonly required or beneficial for the role.
+# Always ensure your answers are specific, helpful, and actionable.
+
+# Structure your response in clean, readable **Markdown** that works well with Tailwind CSS's `prose` styling. Be clear, organized, and visually appealing.
+
+# Formatting guidelines:
+# - Use `##` for main section headings (e.g., Job Roles, Skills, Education)
+# - Use `###` for sub-sections (e.g., Core Skills, Tools, Core Tasks)
+# - Use `-` for bullet points
+# - Use `>` for tips, quotes, or suggestions
+# - Ensure spacing between sections for readability
+# - Use emojis to enhance tone and understanding, but keep them relevant
+
+# Ensure:
+# - No repeated or redundant roles
+# - Clear separation between core content and tips
+# - Bullet lists and spacing render correctly
+# - Content is concise and scannable
+
+# Output only the Markdown-formatted response.
+
+
+# Query: {query}
+
+# Context:
+# {context}
+
+# Answer:"""
+    
+#     # prompt_tokens = len(encoder.encode(prompt))
+#     # print(f"Total prompt token count (query + context): {prompt_tokens}")
+    
+#     # Use Groq API to call LLaMA model
+#     response = groq_client.chat.completions.create(
+#         model="llama3-70b-8192",  # LLaMA model via Groq
+#         messages=[
+#             {"role": "system", "content": "You are a chatbot named CareerCompass. You are a highly knowledgeable and supportive career assistant. You are assisting a user explore career options and make informed decisions based on their interests, education, skills, and preferences. Each time the user converses with you, make sure the context is professional and about their career and that you are providing a helpful response. If the user asks you to do something that is not about a career guidance you should refuse to respond. Keep responses concise yet informative. Use bullet points or numbered lists to break down complex topics into digestible steps."},
+#             {"role": "user", "content": prompt}
+#         ],
+#         max_tokens=500,
+#         temperature=0.7
+#     )
+
+    
+#     answer = response.choices[0].message.content
+#     return {"query": query, "response": answer}

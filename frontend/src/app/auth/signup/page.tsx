@@ -17,7 +17,7 @@ export default function Signup() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/signup', {
+      const response = await fetch('http://localhost:8001/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -5,9 +5,10 @@ import logo5 from "../../resources/logo5.png";
 import arrow from "../../resources/arrow.png";
 import graph from "../../resources/graph.png";
 import send from "../../resources/send.png";
-import { useState, useEffect, useRef } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { useState, useEffect, useRef, FormEvent } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import Header from "@/components/Header";
 
 interface Message {
   type: string;
@@ -19,6 +20,9 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState("");
   const [showPrompts, setShowPrompts] = useState(true);
+  const [savedChats, setSavedChats] = useState<string[]>([]);
+  const [resumeFile, setResumeFile] = useState('');
+  const [infoMessage, setInfoMessage] = useState('');
 
   // Scroll to bottom when messages update
   useEffect(() => {
@@ -27,38 +31,25 @@ export default function Chatbot() {
     }
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Submit a new chat message using the /chatbot endpoint
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const query = userInput.trim();
-    if (!query) return;
-
-    setMessages((prev) => [...prev, { type: "user", text: query }]);
-    setUserInput("");
+    if (!userInput.trim()) return;
+    setMessages(prev => [...prev, { type: 'user', text: userInput }]);
+    const currentInput = userInput;
+    setUserInput('');
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/query", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query }),
+      const res = await fetch('http://127.0.0.1:8001/chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: currentInput }),
       });
-
       const data = await res.json();
-
-      setMessages((prev) => [
-        ...prev,
-        { type: "bot", text: data.response },
-      ]);
+      setMessages(prev => [...prev, { type: 'bot', text: data.response }]);
     } catch (error) {
-      console.error("Error:", error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          type: "bot",
-          text: "Sorry, something went wrong. Please try again.",
-        },
-      ]);
+      console.error('Error:', error);
+      setMessages(prev => [...prev, { type: 'bot', text: 'Sorry, something went wrong. Please try again.' }]);
     }
   };
 
@@ -71,7 +62,7 @@ export default function Chatbot() {
     setMessages((prev) => [...prev, { type: "user", text: prompt }]);
   
     try {
-      const res = await fetch("http://127.0.0.1:8000/query", {
+      const res = await fetch("http://127.0.0.1:8001/chatbot", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -96,19 +87,70 @@ export default function Chatbot() {
       ]);
     }
   };
+
+  // Handler to save the current conversation
+  const handleExit = async () => {
+    try {
+      const res = await fetch('http://127.0.0.1:8001/exit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      setInfoMessage(`Conversation saved as: ${data.file}`);
+      setMessages([]); // Optionally clear the messages after exit
+    } catch (error) {
+      console.error('Error saving conversation:', error);
+      setInfoMessage("Error saving conversation.");
+    }
+  };
+
+  // Fetch the list of saved chat files
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch('http://127.0.0.1:8001/history', { method: 'GET' });
+      const data = await res.json();
+      setSavedChats(data.saved_chats || []);
+    } catch (error) {
+      console.error('Error fetching history:', error);
+      setInfoMessage("Error fetching history.");
+    }
+  };
+
+  // Handler to resume a conversation and update UI with its messages
+  const resumeChatFromFile = async (fileName: string) => {
+    try {
+      const res = await fetch(`http://127.0.0.1:8001/resume/${fileName}`, { method: 'GET' });
+      const data = await res.json();
+      setInfoMessage(data.message || "Chat resumed.");
+      const resumedMessages: Message[] = data.conversation.map(
+        (msg: { role: string; content: string }) => {
+          if (msg.role === "system") {
+            return { type: 'system', text: msg.content };
+          } else if (msg.role === "user") {
+            return { type: 'user', text: msg.content };
+          } else if (msg.role === "assistant") {
+            return { type: 'bot', text: msg.content };
+          }
+          return { type: 'user', text: msg.content };
+        }
+      );
+      setMessages(resumedMessages);
+    } catch (error) {
+      console.error('Error resuming chat:', error);
+      setInfoMessage("Error resuming chat.");
+    }
+  };
   
 
   const isMessageEmpty = userInput.trim() === "";
 
   return (
+    <div>
+      <Header/>
     <div className="outer-interface">
       {/* === Left Nav === */}
       <div className="chat-side-nav header bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%]">
-        <div className="chat-header flex items-center space-x-4">
-          <Image src={logo5} alt="CareerCompass Logo" className="w-10 h-30" />
-          <span className="logo-name">CareerCompass</span>
-        </div>
-
+      
         <div className="data-visualization-button">
           <Image src={graph} alt="graph" className="w-10 h-30" />
           <Link href="/datavisualization" target="_blank" rel="noopener noreferrer">
@@ -117,6 +159,33 @@ export default function Chatbot() {
             </button>
           </Link>
           <Image src={arrow} alt="arrow" className="w-8 h-auto" />
+        </div>
+        <div className="chat-history">
+          <button onClick={fetchHistory}>Refresh History</button>
+
+          <ul className="chat-history-list">
+            {savedChats.map((file, idx) => {
+              const readableName = file
+                .replace("chat_", "")
+                .replace(".json", "")
+                .replace(/_/g, " ")
+                .replace(/-/g, ":");
+
+              const isActive = infoMessage.includes(file); // check if current chat was resumed
+
+              return (
+                <li key={idx}>
+                  <button
+                    className={`chat-history-item ${isActive ? "active" : ""}`}
+                    onClick={() => resumeChatFromFile(file)}
+                  >
+                    {readableName}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          {infoMessage && <p>{infoMessage}</p>}
         </div>
       </div>
 
@@ -195,7 +264,13 @@ export default function Chatbot() {
             </button>
           </form>
         </div>
+        
+        <div className="chat-controls">
+          <button onClick={handleExit}>Save Chat / Exit</button>
+        </div>
+        
       </div>
+    </div>
     </div>
   );
 }

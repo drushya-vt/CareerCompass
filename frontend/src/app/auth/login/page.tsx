@@ -16,7 +16,7 @@ export default function Login() {
     setError('');
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/login', {
+      const response = await fetch('http://127.0.0.1:8001/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,6 +27,7 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
+        localStorage.setItem('username', username);
         router.push("/chatbot");
       } else {
         if (Array.isArray(data.detail)) {

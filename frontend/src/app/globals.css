@@ -264,5 +264,50 @@
   .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
     @apply text-[var(--primary-blue)]; /* Set all headings to primary-blue */
   }
+
+  .chat-history button,
+  .chat-history ul li,
+  .chat-history input,
+  .chat-history p {
+    color: var(--white);
+  }
+
+  .chat-history input {
+    @apply bg-transparent border border-white p-2 rounded-md;
+  }
+
+  .chat-history ul li {
+    @apply mb-1;
+  }
+
+  .chat-history button {
+    @apply font-bold underline mb-2;
+  }
+
+  .chat-history p {
+    @apply mt-2 font-semibold;
+  }
+
+  .chat-history-list {
+    @apply flex flex-col gap-3 w-full mt-2;
+  }
+  
+  .chat-history-item {
+    @apply w-full px-4 py-3 rounded-md font-medium text-sm text-center tracking-wide transition-colors duration-200 border;
+    background-color: transparent;
+    border-color: var(--white);
+    color: var(--white);
+  }
+  
+  .chat-history-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .chat-history-item.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    font-weight: 700;
+    text-decoration: underline;
+  }
+  
   
 }
