@@ -18,7 +18,7 @@ export default function Header() {
     const username = localStorage.getItem('username')
     if (!username) return
 
-    fetch('http://127.0.0.1:8001/logout', {
+    fetch('http://127.0.0.1:8000/logout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username }),

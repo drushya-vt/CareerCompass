@@ -27,7 +27,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not GROQ_API_KEY:
     raise ValueError("❌ Missing GROQ_API_KEY in the .env file.")
 
-# Initialize clients and models
+#Initialize clients and models
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CHROMA_DB_PATH = os.path.join(BASE_DIR, "careervectorstorefinal")
@@ -35,6 +35,23 @@ chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)  # ✅ Initialize
 collections = chroma_client.list_collections()  # ✅ Now this is valid
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 groq_client = Groq(api_key=GROQ_API_KEY)
+# import os
+# BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# CHROMA_DB_PATH = os.path.join(BASE_DIR, "careervectorstorefinal")
+
+# print(f"✅ CHROMA_DB_PATH is: {CHROMA_DB_PATH}")  # <-- PRINT PATH
+
+# chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
+
+# collections = chroma_client.list_collections()
+
+# print(f"✅ Found {len(collections)} collections:")
+# for collection in collections:
+#     print(f"- {collection.name}")  # <-- PRINT COLLECTION NAMES
+
+# openai_client = OpenAI(api_key=OPENAI_API_KEY)
+# groq_client = Groq(api_key=GROQ_API_KEY)
+
 
 
 chat_model = ChatOpenAI(

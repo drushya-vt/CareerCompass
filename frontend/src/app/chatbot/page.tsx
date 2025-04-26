@@ -40,7 +40,7 @@ export default function Chatbot() {
     setUserInput('');
 
     try {
-      const res = await fetch('http://127.0.0.1:8001/chatbot', {
+      const res = await fetch('http://127.0.0.1:8000/chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: currentInput }),
@@ -62,7 +62,7 @@ export default function Chatbot() {
     setMessages((prev) => [...prev, { type: "user", text: prompt }]);
   
     try {
-      const res = await fetch("http://127.0.0.1:8001/chatbot", {
+      const res = await fetch("http://127.0.0.1:8000/chatbot", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -91,7 +91,7 @@ export default function Chatbot() {
   // Handler to save the current conversation
   const handleExit = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8001/exit', {
+      const res = await fetch('http://127.0.0.1:8000/exit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -107,7 +107,7 @@ export default function Chatbot() {
   // Fetch the list of saved chat files
   const fetchHistory = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8001/history', { method: 'GET' });
+      const res = await fetch('http://127.0.0.1:8000/history', { method: 'GET' });
       const data = await res.json();
       setSavedChats(data.saved_chats || []);
     } catch (error) {
@@ -119,7 +119,7 @@ export default function Chatbot() {
   // Handler to resume a conversation and update UI with its messages
   const resumeChatFromFile = async (fileName: string) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8001/resume/${fileName}`, { method: 'GET' });
+      const res = await fetch(`http://127.0.0.1:8000/resume/${fileName}`, { method: 'GET' });
       const data = await res.json();
       setInfoMessage(data.message || "Chat resumed.");
       const resumedMessages: Message[] = data.conversation.map(
