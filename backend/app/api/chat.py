@@ -155,45 +155,76 @@ Answer:"""
         raise HTTPException(status_code=500, detail=str(e))
 
 # Endpoint: Save and reset conversation
+from fastapi import Request  # add at the top if not imported
+
 @router.post("/exit")
-async def exit_chat():
+async def exit_chat(request: Request):
     global conversation_history
     try:
+        username = request.query_params.get("username")
+        if not username:
+            raise HTTPException(status_code=400, detail="Username missing in exit request.")
+
+        user_dir = os.path.join(CHAT_HISTORY_DIR, username)
+        os.makedirs(user_dir, exist_ok=True)
+
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         filename = f"chat_{timestamp}.json"
-        filepath = os.path.join(CHAT_HISTORY_DIR, filename)
+        filepath = os.path.join(user_dir, filename)
+
         history_data = [
             {"role": "system", "content": conversation_history[0].content}
         ] + [
             {"role": "user" if isinstance(msg, HumanMessage) else "assistant", "content": msg.content}
             for msg in conversation_history[1:]
         ]
+
         with open(filepath, "w", encoding="utf-8") as file:
             json.dump(history_data, file, indent=4)
-        logger.info(f"Chat history saved as: {filepath}")
+
+        logger.info(f"Chat history saved for {username} as: {filepath}")
+
         conversation_history = [SystemMessage(content=SYSTEM_PROMPT)]
+
         return {"message": "Conversation saved and chat reset.", "file": filename}
     except Exception as e:
         logger.error(f"Error in exit chat: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 # Endpoint: List saved chat histories
 @router.get("/history")
-async def list_saved_chats():
+async def list_saved_chats(request: Request):
     try:
-        files = [f for f in os.listdir(CHAT_HISTORY_DIR) if f.endswith(".json")]
+        username = request.query_params.get("username")
+        if not username:
+            raise HTTPException(status_code=400, detail="Username missing in history request.")
+
+        user_dir = os.path.join(CHAT_HISTORY_DIR, username)
+        if not os.path.exists(user_dir):
+            return {"saved_chats": []}  # No chats yet
+
+        files = [f for f in os.listdir(user_dir) if f.endswith(".json")]
         return {"saved_chats": files}
     except Exception as e:
         logger.error(f"Error listing saved chats: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 # Endpoint: Resume a saved conversation
 @router.get("/resume/{filename}")
-async def resume_conversation(filename: str):
+async def resume_conversation(filename: str, request: Request):
     try:
-        filepath = os.path.join(CHAT_HISTORY_DIR, filename)
+        username = request.query_params.get("username")
+        if not username:
+            raise HTTPException(status_code=400, detail="Username missing in resume request.")
+
+        user_dir = os.path.join(CHAT_HISTORY_DIR, username)
+        filepath = os.path.join(user_dir, filename)
+
         if not os.path.exists(filepath):
             raise HTTPException(status_code=404, detail="Conversation not found.")
+
         with open(filepath, "r", encoding="utf-8") as f:
             saved_data = json.load(f)
 
@@ -210,7 +241,7 @@ async def resume_conversation(filename: str):
                 conversation_history.append(AIMessage(content=content))
 
         logger.info(f"Conversation '{filename}' resumed successfully")
-        # Return both the message and the raw conversation data
+
         return {
             "message": f"Conversation '{filename}' resumed successfully.",
             "conversation": saved_data

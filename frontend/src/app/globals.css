@@ -309,5 +309,19 @@
     text-decoration: underline;
   }
   
+  .save-exit-container {
+    @apply w-full flex justify-center items-center p-4;
+    background-color: var(--light-blue);
+  }
+  
+  .save-exit-button {
+    @apply py-3 px-6 rounded-md text-lg font-bold text-white transition-colors;
+    background-color: var(--primary-blue);
+  }
+  
+  .save-exit-button:hover {
+    background-color: #002f6c; /* Darker shade on hover */
+  }
+  
   
 }

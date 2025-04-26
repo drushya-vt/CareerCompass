@@ -5,6 +5,8 @@ import logo5 from "../../resources/logo5.png";
 import arrow from "../../resources/arrow.png";
 import graph from "../../resources/graph.png";
 import send from "../../resources/send.png";
+import save from "../../resources/save.png";
+
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -91,23 +93,36 @@ export default function Chatbot() {
   // Handler to save the current conversation
   const handleExit = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/exit', {
+      const username = localStorage.getItem('username');
+      if (!username) {
+        console.error('No username found in localStorage');
+        return;
+      }
+      const res = await fetch(`http://127.0.0.1:8000/exit?username=${encodeURIComponent(username)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
       const data = await res.json();
       setInfoMessage(`Conversation saved as: ${data.file}`);
-      setMessages([]); // Optionally clear the messages after exit
+      setMessages([]); // Clear the messages after exit
     } catch (error) {
       console.error('Error saving conversation:', error);
       setInfoMessage("Error saving conversation.");
     }
   };
+  
 
   // Fetch the list of saved chat files
   const fetchHistory = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/history', { method: 'GET' });
+      const username = localStorage.getItem('username');
+      if (!username) {
+        console.error('No username found in localStorage');
+        return;
+      }
+      const res = await fetch(`http://127.0.0.1:8000/history?username=${encodeURIComponent(username)}`, {
+        method: 'GET',
+      });
       const data = await res.json();
       setSavedChats(data.saved_chats || []);
     } catch (error) {
@@ -115,11 +130,18 @@ export default function Chatbot() {
       setInfoMessage("Error fetching history.");
     }
   };
+  
 
   // Handler to resume a conversation and update UI with its messages
   const resumeChatFromFile = async (fileName: string) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/resume/${fileName}`, { method: 'GET' });
+      const username = localStorage.getItem('username');
+      if (!username) {
+        console.error('No username found in localStorage');
+        return;
+      }
+      const res = await fetch(`http://127.0.0.1:8000/resume/${fileName}?username=${localStorage.getItem('username')}`, { method: 'GET' });
+
       const data = await res.json();
       setInfoMessage(data.message || "Chat resumed.");
       const resumedMessages: Message[] = data.conversation.map(
@@ -140,6 +162,7 @@ export default function Chatbot() {
       setInfoMessage("Error resuming chat.");
     }
   };
+  
   
 
   const isMessageEmpty = userInput.trim() === "";
@@ -262,12 +285,20 @@ export default function Chatbot() {
             >
               <Image src={send} alt="Send Button" className="w-10 h-auto" />
             </button>
+            {/* Save Chat button */}
+              <button
+                type="button"
+                onClick={handleExit}
+                className="transition-opacity duration-200"
+              >
+                <Image src={save} alt="Save Button" className="w-10 h-auto" />
+              </button>
+
           </form>
         </div>
         
-        <div className="chat-controls">
-          <button onClick={handleExit}>Save Chat / Exit</button>
-        </div>
+        
+
         
       </div>
     </div>
