@@ -81,18 +81,18 @@ async def chatbot_endpoint(request: ChatRequest):
             context_str = ""
             for i, doc in enumerate(context_results['documents'][0][:3]):
                 doc_lines = doc.split('\n')  # Split document into lines
-                context += f"### 📄 Document {i+1}\n"
-                context += f"**🧑‍💼 Title:** {doc_lines[0][6:]}\n"
-                context += f"**📘 Description:** {doc_lines[1][12:][:200]}...\n"
-                context += f"**🛠️ Key Skills:**\n- {doc_lines[2][7:][:100]}...\n"
-                context += f"**🎓 Education:**\n- {doc_lines[3][10:][:100]}...\n"
-                context += f"**💼 Work Experience:**\n- {doc_lines[4][15:][:100]}...\n" if len(doc_lines) > 4 else "**💼 Work Experience:**\n- None\n"
-                context += f"**🧪 On-the-Job Training:**\n- {doc_lines[5][21:][:100]}...\n" if len(doc_lines) > 5 else "**🧪 On-the-Job Training:**\n- None\n"
-                context += f"**🧰 Work Activities:**\n- {doc_lines[6][15:][:100]}...\n" if len(doc_lines) > 6 else "**🧰 Work Activities:**\n- None\n"
-                context += f"**🔧 Technical Skills:**\n- {doc_lines[7][17:][:100]}...\n" if len(doc_lines) > 7 else "**🔧 Technical Skills:**\n- None\n"
-                context += f"**📋 Core Tasks:**\n- {doc_lines[8][11:][:100]}...\n" if len(doc_lines) > 8 else "**📋 Core Tasks:**\n- None\n"
-                context += f"**➕ Supplemental Tasks:**\n- {doc_lines[9][18:][:100]}...\n" if len(doc_lines) > 9 else "**➕ Supplemental Tasks:**\n- None\n"
-                context += "\n"
+                context_str += f"### 📄 Document {i+1}\n"
+                context_str += f"**🧑‍💼 Title:** {doc_lines[0][6:]}\n"
+                context_str += f"**📘 Description:** {doc_lines[1][12:][:200]}...\n"
+                context_str += f"**🛠️ Key Skills:**\n- {doc_lines[2][7:][:100]}...\n"
+                context_str += f"**🎓 Education:**\n- {doc_lines[3][10:][:100]}...\n"
+                context_str += f"**💼 Work Experience:**\n- {doc_lines[4][15:][:100]}...\n" if len(doc_lines) > 4 else "**💼 Work Experience:**\n- None\n"
+                context_str += f"**🧪 On-the-Job Training:**\n- {doc_lines[5][21:][:100]}...\n" if len(doc_lines) > 5 else "**🧪 On-the-Job Training:**\n- None\n"
+                context_str += f"**🧰 Work Activities:**\n- {doc_lines[6][15:][:100]}...\n" if len(doc_lines) > 6 else "**🧰 Work Activities:**\n- None\n"
+                context_str += f"**🔧 Technical Skills:**\n- {doc_lines[7][17:][:100]}...\n" if len(doc_lines) > 7 else "**🔧 Technical Skills:**\n- None\n"
+                context_str += f"**📋 Core Tasks:**\n- {doc_lines[8][11:][:100]}...\n" if len(doc_lines) > 8 else "**📋 Core Tasks:**\n- None\n"
+                context_str += f"**➕ Supplemental Tasks:**\n- {doc_lines[9][18:][:100]}...\n" if len(doc_lines) > 9 else "**➕ Supplemental Tasks:**\n- None\n"
+                context_str += "\n"
    
     
     # Construct prompt with summarized context
