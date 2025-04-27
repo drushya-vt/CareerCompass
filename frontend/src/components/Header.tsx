@@ -2,13 +2,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import logo5 from '../resources/logo5.png'
 import { useState, useEffect } from 'react'
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function Header() {
 
   const [loggedIn, setLoggedIn] = useState(false);
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
+  const pathname = usePathname();
   const [username, setUsername] = useState<string | null>(null);
  
 
@@ -31,6 +32,8 @@ export default function Header() {
     }).catch(err => console.error("Logout failed", err))
   }
 
+  const isAuthPage = pathname === "/auth/login" || pathname === "/auth/signup";
+
   return (
     <header className="header bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%]
 ">
@@ -41,26 +44,33 @@ export default function Header() {
           </div>
           <span className="logo-text">CareerCompass</span>
         </Link>
-        <nav>
-
-
-            <ul className="flex space-x-6 text-base font-bold text-white-700">
-            <li><Link href="/" className="hover:text-black">Home</Link></li>
-            <li><Link href="/chatbot" className="hover:text-black">Chatbot</Link></li>
-            <li><Link href="/datavisualization" className="hover:text-black">Insights</Link></li>
-            {loggedIn ? (
-            <li>
-              <button onClick={handleLogout} className="secondary-button">
-                Log Out
-              </button>
-            </li>
-          ) : (
-            <li>
-              <Link href="/auth/login" className="secondary-button">Log In</Link>
-            </li>
-          )}
-          </ul>
-        </nav>
+ 
+        {!isAuthPage && (
+          <nav>
+            <ul className="flex space-x-6 text-base font-bold text-white">
+              <li><Link href="/" className="hover:text-black">Home</Link></li>
+              {loggedIn && (
+                <>
+                  <li><Link href="/chatbot" className="hover:text-black">Chatbot</Link></li>
+                  <li><Link href="/datavisualization" className="hover:text-black">Insights</Link></li>
+                </>
+              )}
+              {loggedIn ? (
+                <li>
+                  <button onClick={handleLogout} className="secondary-button hover:text-black">
+                    Log Out
+                  </button>
+                </li>
+              ) : (
+                <li>
+                  <Link href="/auth/login" className="secondary-button hover:text-black">
+                    Log In
+                  </Link>
+                </li>
+              )}
+            </ul>
+          </nav>
+        )}
       </div>
     </header>
 )

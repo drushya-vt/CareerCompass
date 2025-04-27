@@ -150,10 +150,11 @@
 
   .outer-interface {
     @apply flex flex-col md:flex-row w-full h-screen;
+   
   }
   
   .chat-side-nav {
-    @apply w-full md:w-1/4 p-4 md:p-8 lg:p-14 flex flex-col items-center gap-4 md:gap-8;
+    @apply w-full md:w-1/4 p-4 md:p-8 lg:p-14 flex flex-col items-center gap-2 md:gap-6;
     background-color: var(--primary-blue);
   }
   
@@ -189,7 +190,12 @@
     @apply flex-col;
   }
 
-
+  .newchat-button {
+    
+    color: var(--primary-blue); 
+    
+  }
+  
   
   
   .main-chat-interface {

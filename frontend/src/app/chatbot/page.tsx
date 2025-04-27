@@ -7,9 +7,9 @@ import graph from "../../resources/graph.png";
 import send from "../../resources/send.png";
 import save from "../../resources/save.png";
 
-import { useState, useEffect, useRef, FormEvent } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { useState, useEffect, useRef, FormEvent } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import LogoutButton from "@/components/LogoutButton";
 
 interface Message {
@@ -17,7 +17,10 @@ interface Message {
   text: string;
 }
 
-interface SavedChat { chatId: string; timestamp: string }
+interface SavedChat {
+  chatId: string;
+  timestamp: string;
+}
 
 export default function Chatbot() {
   const chatRef = useRef<HTMLDivElement>(null);
@@ -25,51 +28,52 @@ export default function Chatbot() {
   const [userInput, setUserInput] = useState("");
   const [showPrompts, setShowPrompts] = useState(true);
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
-  const [infoMessage, setInfoMessage] = useState('');
+  const [infoMessage, setInfoMessage] = useState("");
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
   const [username, setUsername] = useState<string | null>(null);
 
+  // On page load
   useEffect(() => {
     setUsername(localStorage.getItem("username"));
+    setShowPrompts(true);
   }, []);
 
-  // Scroll to bottom when messages update
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
   }, [messages]);
 
-  // Submit a new chat message using the /chatbot endpoint
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!userInput.trim()) return;
-    setMessages(prev => [...prev, { type: 'user', text: userInput }]);
+    setMessages((prev) => [...prev, { type: "user", text: userInput }]);
     const currentInput = userInput;
-    setUserInput('');
+    setUserInput("");
+    setShowPrompts(false);
 
     try {
       const res = await fetch(`${API_BASE_URL}/chatbot`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: currentInput }),
       });
       const data = await res.json();
-      setMessages(prev => [...prev, { type: 'bot', text: data.response }]);
+      setMessages((prev) => [...prev, { type: "bot", text: data.response }]);
     } catch (error) {
-      console.error('Error:', error);
-      setMessages(prev => [...prev, { type: 'bot', text: 'Sorry, something went wrong. Please try again.' }]);
+      console.error("Error:", error);
+      setMessages((prev) => [
+        ...prev,
+        { type: "bot", text: "Sorry, something went wrong. Please try again." },
+      ]);
     }
   };
 
-  // Auto-submit prompt
   const handleExampleClick = async (prompt: string) => {
     setShowPrompts(false);
-    setUserInput(""); // Clear it visually
-  
-    // Immediately update messages and send prompt
+    setUserInput("");
     setMessages((prev) => [...prev, { type: "user", text: prompt }]);
-  
+
     try {
       const res = await fetch(`${API_BASE_URL}/chatbot`, {
         method: "POST",
@@ -78,113 +82,119 @@ export default function Chatbot() {
         },
         body: JSON.stringify({ query: prompt }),
       });
-  
+
       const data = await res.json();
-  
-      setMessages((prev) => [
-        ...prev,
-        { type: "bot", text: data.response },
-      ]);
+      setMessages((prev) => [...prev, { type: "bot", text: data.response }]);
     } catch (error) {
       console.error("Error:", error);
       setMessages((prev) => [
         ...prev,
-        {
-          type: "bot",
-          text: "Sorry, something went wrong. Please try again.",
-        },
+        { type: "bot", text: "Sorry, something went wrong. Please try again." },
       ]);
     }
   };
 
-  // Handler to save the current conversation
   const handleExit = async () => {
     try {
       if (!username) {
-        console.error('No username found in localStorage');
+        console.error("No username found in localStorage");
         return;
       }
-      const res = await fetch(`${API_BASE_URL}/exit?username=${encodeURIComponent(username)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const data = await res.json();
-      setInfoMessage(`Conversation saved`);
-      setMessages([]); // Clear the messages after exit
+      const res = await fetch(
+        `${API_BASE_URL}/exit?username=${encodeURIComponent(username)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      await res.json();
+      setInfoMessage("Conversation saved");
+      setMessages([]);
+      setShowPrompts(true);
     } catch (error) {
-      console.error('Error saving conversation:', error);
+      console.error("Error saving conversation:", error);
       setInfoMessage("Error saving conversation.");
     }
   };
-  
 
-  // Fetch the list of saved chat files
   const fetchHistory = async () => {
     try {
       if (!username) {
-        console.error('No username found in localStorage');
+        console.error("No username found in localStorage");
         return;
       }
-      // Fetch all chat records in one call
-      const res = await fetch(`${API_BASE_URL}/history?username=${encodeURIComponent(username)}`, {
-        method: 'GET',
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/history?username=${encodeURIComponent(username)}`,
+        {
+          method: "GET",
+        }
+      );
       const data = await res.json();
-      
-      const chats: { chat_id: string; history: { role: string; content: string }[]; timestamp: string }[] = data.saved_chats || [];
-      const previews: SavedChat[] = chats.map(item => {
-        return { chatId: item.chat_id, timestamp: item.timestamp };
-      });
+      const chats = data.saved_chats || [];
+
+      // ✅ Sort chats by latest timestamp first
+      chats.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+      const previews: SavedChat[] = chats.map((item: any) => ({
+        chatId: item.chat_id,
+        timestamp: item.timestamp,
+      }));
       setSavedChats(previews);
     } catch (error) {
-      console.error('Error fetching history:', error);
+      console.error("Error fetching history:", error);
       setInfoMessage("Error fetching history.");
     }
   };
-  
 
-  // Handler to resume a conversation and update UI with its messages
   const resumeChat = async (chatId: string) => {
     try {
       if (!username) {
-        console.error('No username found in localStorage');
+        console.error("No username found in localStorage");
         return;
       }
       const res = await fetch(
         `${API_BASE_URL}/resume/${chatId}?username=${encodeURIComponent(username)}`,
-        { method: 'GET' }
+        { method: "GET" }
       );
-
       const data = await res.json();
-      setInfoMessage("Chat resumed.");
+      setInfoMessage("Chat resumed");
+
       const resumedMessages: Message[] = data.conversation.map(
         (msg: { role: string; content: string }) => {
-          if (msg.role === "system") {
-            return { type: 'system', text: msg.content };
-          } else if (msg.role === "user") {
-            return { type: 'user', text: msg.content };
-          } else if (msg.role === "assistant") {
-            return { type: 'bot', text: msg.content };
-          }
-          return { type: 'user', text: msg.content };
+          if (msg.role === "system") return { type: "system", text: msg.content };
+          if (msg.role === "user") return { type: "user", text: msg.content };
+          if (msg.role === "assistant") return { type: "bot", text: msg.content };
+          return { type: "user", text: msg.content };
         }
       );
       setMessages(resumedMessages);
+
+      setShowPrompts(false); // ✅ Hide "Try Asking" when resuming
     } catch (error) {
-      console.error('Error resuming chat:', error);
+      console.error("Error resuming chat:", error);
       setInfoMessage("Error resuming chat.");
     }
   };
 
-  const isMessageEmpty = userInput.trim() === '';
+  const handleNewChat = () => {
+    setMessages([]);
+    setInfoMessage("");
+    setShowPrompts(true);
+    setUserInput("");
+  };
+
+  const isMessageEmpty = userInput.trim() === "";
 
   return (
     <div className="outer-interface">
-      <LogoutButton/>
       {/* === Left Nav === */}
-      <div className="chat-side-nav header bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%]">
-      
-        <div className="data-visualization-button">
+      <div className="chat-side-nav header bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%] flex flex-col">
+        <div className="chat-header flex items-center space-x-4 p-4">
+          <Image src={logo5} alt="CareerCompass Logo" className="w-10 h-30" />
+          <span className="logo-name">CareerCompass</span>
+        </div>
+
+        <div className="data-visualization-button p-4">
           <Image src={graph} alt="graph" className="w-10 h-30" />
           <Link href="/datavisualization" target="_blank" rel="noopener noreferrer">
             <button type="button" className="data-button">
@@ -193,38 +203,42 @@ export default function Chatbot() {
           </Link>
           <Image src={arrow} alt="arrow" className="w-8 h-auto" />
         </div>
-        <div className="chat-history">
-          <button onClick={fetchHistory}>Refresh History</button>
 
-          <ul className="chat-history-list">
-            {savedChats.map(({ chatId, timestamp }) => {
-              const isActive = infoMessage.includes(chatId);
-              return (
-                <li key={chatId}>
-                  <button
-                    className={`chat-history-item ${isActive ? "active" : ""}`}
-                    onClick={() => resumeChat(chatId)}
-                  >
-                    {new Date(timestamp).toLocaleString()}
-                  </button>
-                </li>
-              );
-            })}
+        <div className="chat-history flex-1 flex flex-col overflow-hidden p-4">
+          <div className="flex gap-2 mb-4 flex-col">
+            <button onClick={handleNewChat} className="newchat-button">
+              ➕ New Conversation
+            </button>
+            <button onClick={fetchHistory} className="newchat-button">
+              🔄 Refresh History
+            </button>
+          </div>
+
+          <ul className="chat-history-list flex-1 overflow-y-auto pr-2">
+            {savedChats.map(({ chatId, timestamp }) => (
+              <li key={chatId}>
+                <button
+                  className="chat-history-item"
+                  onClick={() => resumeChat(chatId)}
+                >
+                  {new Date(timestamp).toLocaleString()}
+                </button>
+              </li>
+            ))}
           </ul>
           {infoMessage && <p>{infoMessage}</p>}
         </div>
       </div>
 
-      {/* === Chat Area === */}
+      {/* === Main Chat Area === */}
       <div className="main-chat-interface flex flex-col justify-between">
-        
-        {/* === Chat Messages === */}
+        <div className="flex justify-end p-4 bg-white shadow">
+          <LogoutButton />
+        </div>
+
         <div className="chat flex-1 overflow-y-auto p-4" ref={chatRef}>
           {messages.map((msg, index) => (
-            <div
-              key={index}
-              className={msg.type === "user" ? "user-message" : "bot-message"}
-            >
+            <div key={index} className={msg.type === "user" ? "user-message" : "bot-message"}>
               {msg.type === "bot" ? (
                 <div className="prose">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -238,10 +252,10 @@ export default function Chatbot() {
           ))}
         </div>
 
-        {/* === Example Prompts (Visible Only Initially) === */}
+        {/* === Example Prompts === */}
         {showPrompts && (
           <div className="p-4 border-t bg-white/90 rounded-t-2xl">
-            <h3 className="text-center text-md text-3xl font-semibold text-gray-700 mb-6">
+            <h3 className="text-center text-3xl font-semibold text-gray-700 mb-6">
               💡 Try asking:
             </h3>
             <div className="flex flex-wrap gap-3 justify-center">
@@ -263,7 +277,7 @@ export default function Chatbot() {
           </div>
         )}
 
-        {/* === User Input === */}
+        {/* === User Input Section === */}
         <div className="user-input border-t border-gray-200 p-4 bg-white">
           <form onSubmit={handleSubmit} className="form-elements flex items-center gap-4">
             <textarea
@@ -288,21 +302,16 @@ export default function Chatbot() {
             >
               <Image src={send} alt="Send Button" className="w-10 h-auto" />
             </button>
-            {/* Save Chat button */}
-              <button
-                type="button"
-                onClick={handleExit}
-                className="transition-opacity duration-200"
-              >
-                <Image src={save} alt="Save Button" className="w-10 h-auto" />
-              </button>
 
+            <button
+              type="button"
+              onClick={handleExit}
+              className="transition-opacity duration-200"
+            >
+              <Image src={save} alt="Save Button" className="w-10 h-auto" />
+            </button>
           </form>
         </div>
-        
-        
-
-        
       </div>
     </div>
   );
