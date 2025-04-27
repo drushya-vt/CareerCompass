@@ -11,13 +11,14 @@ export default function Signup() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/signup', {
+      const response = await fetch(`${API_BASE_URL}/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,7 +34,7 @@ export default function Signup() {
 
       if (response.ok) {
         console.log('Signup successful:', data.message);
-        router.push("/auth/login");
+        router.push("/chatbot");
       } else {
         setError(data.detail || 'Signup failed');
       }

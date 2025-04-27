@@ -8,17 +8,20 @@ export default function Header() {
 
   const [loggedIn, setLoggedIn] = useState(false);
   const router = useRouter();
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
+  const [username, setUsername] = useState<string | null>(null);
+ 
 
   useEffect(() => {
-    const user = localStorage.getItem('username')
-    setLoggedIn(!!user)
+    const storedUsername = localStorage.getItem("username");
+    setUsername(storedUsername);
+    setLoggedIn(!!storedUsername);
   }, []);
 
   const handleLogout = async () => {
-    const username = localStorage.getItem('username')
     if (!username) return
 
-    fetch('http://127.0.0.1:8000/logout', {
+    fetch(`${API_BASE_URL}/logout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username }),
@@ -40,9 +43,7 @@ export default function Header() {
           <span className="logo-text">CareerCompass</span>
         </Link>
         <nav>
-          {/* <ul className="nav-list">
-            <li><Link href="/auth/login" className="login-button">Log In</Link></li>
-          </ul> */}
+
 
             <ul className="flex space-x-6 text-base font-bold text-white-700">
             <li><Link href="/" className="hover:text-black">Home</Link></li>
@@ -63,5 +64,5 @@ export default function Header() {
         </nav>
       </div>
     </header>
-  )
+)
 }

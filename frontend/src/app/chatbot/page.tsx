@@ -17,14 +17,22 @@ interface Message {
   text: string;
 }
 
+interface SavedChat { chatId: string; snippet: string }
+
 export default function Chatbot() {
   const chatRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState("");
   const [showPrompts, setShowPrompts] = useState(true);
-  const [savedChats, setSavedChats] = useState<string[]>([]);
+  const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
   const [resumeFile, setResumeFile] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUsername(localStorage.getItem("username"));
+  }, []);
 
   // Scroll to bottom when messages update
   useEffect(() => {
@@ -42,7 +50,7 @@ export default function Chatbot() {
     setUserInput('');
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/chatbot', {
+      const res = await fetch(`${API_BASE_URL}/chatbot`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: currentInput }),
@@ -64,7 +72,7 @@ export default function Chatbot() {
     setMessages((prev) => [...prev, { type: "user", text: prompt }]);
   
     try {
-      const res = await fetch("http://127.0.0.1:8000/chatbot", {
+      const res = await fetch(`${API_BASE_URL}/chatbot`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -93,17 +101,16 @@ export default function Chatbot() {
   // Handler to save the current conversation
   const handleExit = async () => {
     try {
-      const username = localStorage.getItem('username');
       if (!username) {
         console.error('No username found in localStorage');
         return;
       }
-      const res = await fetch(`http://127.0.0.1:8000/exit?username=${encodeURIComponent(username)}`, {
+      const res = await fetch(`${API_BASE_URL}/exit?username=${encodeURIComponent(username)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
       const data = await res.json();
-      setInfoMessage(`Conversation saved as: ${data.file}`);
+      setInfoMessage(`Conversation saved`);
       setMessages([]); // Clear the messages after exit
     } catch (error) {
       console.error('Error saving conversation:', error);
@@ -115,16 +122,26 @@ export default function Chatbot() {
   // Fetch the list of saved chat files
   const fetchHistory = async () => {
     try {
-      const username = localStorage.getItem('username');
       if (!username) {
         console.error('No username found in localStorage');
         return;
       }
-      const res = await fetch(`http://127.0.0.1:8000/history?username=${encodeURIComponent(username)}`, {
+      // Fetch all chat records in one call
+      const res = await fetch(`${API_BASE_URL}/history?username=${encodeURIComponent(username)}`, {
         method: 'GET',
       });
       const data = await res.json();
-      setSavedChats(data.saved_chats || []);
+      console.log(data);
+      // Expect data.saved_chats to be ChatRecord[]
+      const chats: { chat_id: string; history: { role: string; content: string }[] }[] = data.saved_chats || [];
+      // Build previews
+      const previews: SavedChat[] = chats.map(item => {
+        const firstUser = item.history.find(m => m.role === 'user');
+        const text = firstUser ? firstUser.content : '';
+        const snippet = text.split(' ').slice(0, 5).join(' ') + '...';
+        return { chatId: item.chat_id, snippet };
+      });
+      setSavedChats(previews);
     } catch (error) {
       console.error('Error fetching history:', error);
       setInfoMessage("Error fetching history.");
@@ -133,14 +150,16 @@ export default function Chatbot() {
   
 
   // Handler to resume a conversation and update UI with its messages
-  const resumeChatFromFile = async (fileName: string) => {
+  const resumeChatFromFile = async (chatId: string) => {
     try {
-      const username = localStorage.getItem('username');
       if (!username) {
         console.error('No username found in localStorage');
         return;
       }
-      const res = await fetch(`http://127.0.0.1:8000/resume/${fileName}?username=${localStorage.getItem('username')}`, { method: 'GET' });
+      const res = await fetch(
+        `${API_BASE_URL}/resume/${chatId}?username=${encodeURIComponent(username)}`,
+        { method: 'GET' }
+      );
 
       const data = await res.json();
       setInfoMessage(data.message || "Chat resumed.");
@@ -162,10 +181,8 @@ export default function Chatbot() {
       setInfoMessage("Error resuming chat.");
     }
   };
-  
-  
 
-  const isMessageEmpty = userInput.trim() === "";
+  const isMessageEmpty = userInput.trim() === '';
 
   return (
     <div>
@@ -187,22 +204,15 @@ export default function Chatbot() {
           <button onClick={fetchHistory}>Refresh History</button>
 
           <ul className="chat-history-list">
-            {savedChats.map((file, idx) => {
-              const readableName = file
-                .replace("chat_", "")
-                .replace(".json", "")
-                .replace(/_/g, " ")
-                .replace(/-/g, ":");
-
-              const isActive = infoMessage.includes(file); // check if current chat was resumed
-
+            {savedChats.map(({ chatId, snippet }) => {
+              const isActive = infoMessage.includes(chatId);
               return (
-                <li key={idx}>
+                <li key={chatId}>
                   <button
                     className={`chat-history-item ${isActive ? "active" : ""}`}
-                    onClick={() => resumeChatFromFile(file)}
+                    onClick={() => resumeChatFromFile(chatId)}
                   >
-                    {readableName}
+                    {snippet}
                   </button>
                 </li>
               );

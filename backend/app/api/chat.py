@@ -14,6 +14,11 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage, AIMessage
 
+from fastapi import Request
+from dynamodb_client import chat_table  
+from dynamodb_client import save_chat_history, get_chat_history
+
+
 # Configure logging
 logger = logging.getLogger(__name__)
 
@@ -28,31 +33,12 @@ if not GROQ_API_KEY:
     raise ValueError("❌ Missing GROQ_API_KEY in the .env file.")
 
 #Initialize clients and models
-import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CHROMA_DB_PATH = os.path.join(BASE_DIR, "careervectorstorefinal")
 chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)  # ✅ Initialize first
 collections = chroma_client.list_collections()  # ✅ Now this is valid
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 groq_client = Groq(api_key=GROQ_API_KEY)
-# import os
-# BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# CHROMA_DB_PATH = os.path.join(BASE_DIR, "careervectorstorefinal")
-
-# print(f"✅ CHROMA_DB_PATH is: {CHROMA_DB_PATH}")  # <-- PRINT PATH
-
-# chroma_client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
-
-# collections = chroma_client.list_collections()
-
-# print(f"✅ Found {len(collections)} collections:")
-# for collection in collections:
-#     print(f"- {collection.name}")  # <-- PRINT COLLECTION NAMES
-
-# openai_client = OpenAI(api_key=OPENAI_API_KEY)
-# groq_client = Groq(api_key=GROQ_API_KEY)
-
-
 
 chat_model = ChatOpenAI(
     model="llama3-70b-8192",
@@ -155,8 +141,6 @@ Answer:"""
         raise HTTPException(status_code=500, detail=str(e))
 
 # Endpoint: Save and reset conversation
-from fastapi import Request  # add at the top if not imported
-
 @router.post("/exit")
 async def exit_chat(request: Request):
     global conversation_history
@@ -165,13 +149,6 @@ async def exit_chat(request: Request):
         if not username:
             raise HTTPException(status_code=400, detail="Username missing in exit request.")
 
-        user_dir = os.path.join(CHAT_HISTORY_DIR, username)
-        os.makedirs(user_dir, exist_ok=True)
-
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        filename = f"chat_{timestamp}.json"
-        filepath = os.path.join(user_dir, filename)
-
         history_data = [
             {"role": "system", "content": conversation_history[0].content}
         ] + [
@@ -179,14 +156,13 @@ async def exit_chat(request: Request):
             for msg in conversation_history[1:]
         ]
 
-        with open(filepath, "w", encoding="utf-8") as file:
-            json.dump(history_data, file, indent=4)
+        chat_id = save_chat_history(username, history_data)
 
-        logger.info(f"Chat history saved for {username} as: {filepath}")
+        logger.info(f"Chat history saved for {username} with chat_id: {chat_id}")
 
         conversation_history = [SystemMessage(content=SYSTEM_PROMPT)]
 
-        return {"message": "Conversation saved and chat reset.", "file": filename}
+        return {"message": "Conversation saved and chat reset.", "chat_id": chat_id}
     except Exception as e:
         logger.error(f"Error in exit chat: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -200,37 +176,30 @@ async def list_saved_chats(request: Request):
         if not username:
             raise HTTPException(status_code=400, detail="Username missing in history request.")
 
-        user_dir = os.path.join(CHAT_HISTORY_DIR, username)
-        if not os.path.exists(user_dir):
-            return {"saved_chats": []}  # No chats yet
-
-        files = [f for f in os.listdir(user_dir) if f.endswith(".json")]
-        return {"saved_chats": files}
+        chats = get_chat_history(user_id=username)
+        return {"saved_chats": [item for item in chats]}
     except Exception as e:
         logger.error(f"Error listing saved chats: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 # Endpoint: Resume a saved conversation
-@router.get("/resume/{filename}")
-async def resume_conversation(filename: str, request: Request):
+@router.get("/resume/{chat_id}")
+async def resume_conversation(chat_id: str, request: Request):
     try:
         username = request.query_params.get("username")
         if not username:
             raise HTTPException(status_code=400, detail="Username missing in resume request.")
 
-        user_dir = os.path.join(CHAT_HISTORY_DIR, username)
-        filepath = os.path.join(user_dir, filename)
-
-        if not os.path.exists(filepath):
+        record = get_chat_history(chat_id=chat_id)
+        if not record:
             raise HTTPException(status_code=404, detail="Conversation not found.")
 
-        with open(filepath, "r", encoding="utf-8") as f:
-            saved_data = json.load(f)
+        conversation = record["history"]
 
         global conversation_history
         conversation_history = []
-        for message in saved_data:
+        for message in conversation:
             role = message["role"]
             content = message["content"]
             if role == "system":
@@ -240,11 +209,11 @@ async def resume_conversation(filename: str, request: Request):
             elif role == "assistant":
                 conversation_history.append(AIMessage(content=content))
 
-        logger.info(f"Conversation '{filename}' resumed successfully")
+        logger.info(f"Conversation '{chat_id}' resumed successfully")
 
         return {
-            "message": f"Conversation '{filename}' resumed successfully.",
-            "conversation": saved_data
+            "message": f"Conversation '{chat_id}' resumed successfully.",
+            "conversation": conversation
         }
     except Exception as e:
         logger.error(f"Error resuming conversation: {str(e)}")
