@@ -34,6 +34,7 @@ export default function Signup() {
 
       if (response.ok) {
         console.log('Signup successful:', data.message);
+        localStorage.setItem('username', username);
         router.push("/chatbot");
       } else {
         setError(data.detail || 'Signup failed');

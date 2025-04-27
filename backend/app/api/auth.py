@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.core.config import logger
 from app.models.user import UserRequest, LoginRequest, LogoutRequest
-from dynamodb_client import (
+from dynamodb.dynamodb_client import (
     get_user, create_user, verify_password,
     save_session_login, save_session_logout
 )

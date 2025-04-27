@@ -15,8 +15,7 @@ from langchain_openai import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage, AIMessage
 
 from fastapi import Request
-from dynamodb_client import chat_table  
-from dynamodb_client import save_chat_history, get_chat_history
+from dynamodb.dynamodb_client import save_chat_history, get_chat_history
 
 
 # Configure logging

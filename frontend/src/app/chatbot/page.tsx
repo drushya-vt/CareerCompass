@@ -10,14 +10,14 @@ import save from "../../resources/save.png";
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import Header from "@/components/Header";
+import LogoutButton from "@/components/LogoutButton";
 
 interface Message {
   type: string;
   text: string;
 }
 
-interface SavedChat { chatId: string; snippet: string }
+interface SavedChat { chatId: string; timestamp: string }
 
 export default function Chatbot() {
   const chatRef = useRef<HTMLDivElement>(null);
@@ -25,7 +25,6 @@ export default function Chatbot() {
   const [userInput, setUserInput] = useState("");
   const [showPrompts, setShowPrompts] = useState(true);
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
-  const [resumeFile, setResumeFile] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
   const [username, setUsername] = useState<string | null>(null);
@@ -131,15 +130,10 @@ export default function Chatbot() {
         method: 'GET',
       });
       const data = await res.json();
-      console.log(data);
-      // Expect data.saved_chats to be ChatRecord[]
-      const chats: { chat_id: string; history: { role: string; content: string }[] }[] = data.saved_chats || [];
-      // Build previews
+      
+      const chats: { chat_id: string; history: { role: string; content: string }[]; timestamp: string }[] = data.saved_chats || [];
       const previews: SavedChat[] = chats.map(item => {
-        const firstUser = item.history.find(m => m.role === 'user');
-        const text = firstUser ? firstUser.content : '';
-        const snippet = text.split(' ').slice(0, 5).join(' ') + '...';
-        return { chatId: item.chat_id, snippet };
+        return { chatId: item.chat_id, timestamp: item.timestamp };
       });
       setSavedChats(previews);
     } catch (error) {
@@ -150,7 +144,7 @@ export default function Chatbot() {
   
 
   // Handler to resume a conversation and update UI with its messages
-  const resumeChatFromFile = async (chatId: string) => {
+  const resumeChat = async (chatId: string) => {
     try {
       if (!username) {
         console.error('No username found in localStorage');
@@ -162,7 +156,7 @@ export default function Chatbot() {
       );
 
       const data = await res.json();
-      setInfoMessage(data.message || "Chat resumed.");
+      setInfoMessage("Chat resumed.");
       const resumedMessages: Message[] = data.conversation.map(
         (msg: { role: string; content: string }) => {
           if (msg.role === "system") {
@@ -185,9 +179,8 @@ export default function Chatbot() {
   const isMessageEmpty = userInput.trim() === '';
 
   return (
-    <div>
-      <Header/>
     <div className="outer-interface">
+      <LogoutButton/>
       {/* === Left Nav === */}
       <div className="chat-side-nav header bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%]">
       
@@ -204,15 +197,15 @@ export default function Chatbot() {
           <button onClick={fetchHistory}>Refresh History</button>
 
           <ul className="chat-history-list">
-            {savedChats.map(({ chatId, snippet }) => {
+            {savedChats.map(({ chatId, timestamp }) => {
               const isActive = infoMessage.includes(chatId);
               return (
                 <li key={chatId}>
                   <button
                     className={`chat-history-item ${isActive ? "active" : ""}`}
-                    onClick={() => resumeChatFromFile(chatId)}
+                    onClick={() => resumeChat(chatId)}
                   >
-                    {snippet}
+                    {new Date(timestamp).toLocaleString()}
                   </button>
                 </li>
               );
@@ -311,7 +304,6 @@ export default function Chatbot() {
 
         
       </div>
-    </div>
     </div>
   );
 }

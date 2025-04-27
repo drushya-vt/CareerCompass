@@ -13,9 +13,8 @@ export default function Header() {
  
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    setUsername(storedUsername);
-    setLoggedIn(!!storedUsername);
+    setUsername(localStorage.getItem("username"));
+    setLoggedIn(!!username)
   }, []);
 
   const handleLogout = async () => {

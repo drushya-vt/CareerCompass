@@ -15,9 +15,9 @@ dynamodb = boto3.resource(
 )
 
 # Tables
-users_table = dynamodb.Table("Users")
-session_table = dynamodb.Table("UserSessions")
-chat_table = dynamodb.Table("ChatHistories")
+users_table = dynamodb.Table("G2_Users")
+session_table = dynamodb.Table("G2_UserSessions")
+chat_table = dynamodb.Table("G2_ChatHistories")
 
 
 # ===== User Account Handling =====

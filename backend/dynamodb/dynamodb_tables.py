@@ -16,10 +16,11 @@ def create_tables():
     # Users
     try:
         dynamodb.create_table(
-            TableName="Users",
+            TableName="G2_Users",
             KeySchema=[{"AttributeName": "username", "KeyType": "HASH"}],
             AttributeDefinitions=[{"AttributeName": "username", "AttributeType": "S"}],
-            ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5}
+            ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
+            Tags=[{"Key": "Owner", "Value": "Drushya"}]
         )
     except dynamodb.exceptions.ResourceInUseException:
         pass
@@ -27,10 +28,11 @@ def create_tables():
     # UserSessions
     try:
         dynamodb.create_table(
-            TableName="UserSessions",
+            TableName="G2_UserSessions",
             KeySchema=[{"AttributeName": "username", "KeyType": "HASH"}],
             AttributeDefinitions=[{"AttributeName": "username", "AttributeType": "S"}],
-            ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5}
+            ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
+            Tags=[{"Key": "Owner", "Value": "Drushya"}]
         )
     except dynamodb.exceptions.ResourceInUseException:
         pass
@@ -38,7 +40,7 @@ def create_tables():
     # ChatHistories
     try:
         dynamodb.create_table(
-            TableName="ChatHistories",
+            TableName="G2_ChatHistories",
             KeySchema=[
                 {"AttributeName": "chat_id", "KeyType": "HASH"}
             ],
@@ -62,7 +64,8 @@ def create_tables():
             ProvisionedThroughput={
                 "ReadCapacityUnits": 5,
                 "WriteCapacityUnits": 5
-            }
+            },
+            Tags=[{"Key": "Owner", "Value": "Drushya"}]
         )
     except dynamodb.exceptions.ResourceInUseException:
         pass
@@ -77,7 +80,7 @@ def verify_tables():
 
 
 # Table you want to inspect
-table_name = "UserSessions"
+table_name = "G2_Users"
 
 def parse_item(item):
     """Flatten DynamoDB types (e.g., {"S": "value"} → "value")"""
@@ -101,6 +104,6 @@ def view_all_items():
         print(f"❌ Error: {e}")
 
 if __name__ == "__main__":
-    # create_tables()
-    # verify_tables()
+    create_tables()
+    verify_tables()
     view_all_items()
