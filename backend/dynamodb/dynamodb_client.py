@@ -5,6 +5,8 @@ import bcrypt
 import os
 from boto3.dynamodb.conditions import Key
 from dotenv import load_dotenv
+from botocore.exceptions import ClientError
+
 load_dotenv()
 
 # Initialize DynamoDB
@@ -67,14 +69,49 @@ def save_chat_history(user_id: str, history_data):
     })
     return chat_id
 
-def get_chat_history(user_id: str = None, chat_id: str = None):
-    if chat_id:
-        response = chat_table.get_item(Key={"chat_id": chat_id})
-        return response.get("Item")
-    if user_id:
-        response = chat_table.query(
-            IndexName="user_id-index",
-            KeyConditionExpression=Key("user_id").eq(user_id)
+
+
+def get_chat_history(user_id: str, chat_id: str):
+    try:
+        response = chat_table.get_item(
+            Key={'chat_id': chat_id}
         )
-        return response.get("Items", [])
-    raise ValueError("Must provide either user_id or chat_id")
+        item = response.get('Item')
+        if not item:
+            return None
+        
+        # 🛡️ Protect: Check if the chat really belongs to the requesting user
+        if item.get('user_id') != user_id:
+            raise Exception("Chat does not belong to the user.")
+
+        return {
+            "chat_id": item["chat_id"],
+            "history": item["history"],
+            "timestamp": item.get("timestamp", "")
+        }
+    except ClientError as e:
+        print(f"Error getting chat history: {e}")
+        return None
+    except Exception as e:
+        print(f"Access denied or other error: {e}")
+        return None
+
+
+def get_user_chat_histories(user_id: str):
+    try:
+        response = chat_table.query(
+            IndexName="user_id-index",  # 🛑 Important! Query the correct index
+            KeyConditionExpression=Key('user_id').eq(user_id),
+            ScanIndexForward=False  # 🔥 Optional: latest chats first
+        )
+        items = response.get('Items', [])
+        return [
+            {
+                "chat_id": item["chat_id"],
+                "timestamp": item.get("timestamp", "")
+            }
+            for item in items
+        ]
+    except ClientError as e:
+        print(f"Error getting user chat histories: {e}")
+        return []
