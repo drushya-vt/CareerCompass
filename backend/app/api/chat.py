@@ -52,6 +52,7 @@ CHAT_HISTORY_DIR = "chat_history"
 os.makedirs(CHAT_HISTORY_DIR, exist_ok=True)
 SYSTEM_PROMPT = "You are a chatbot named CareerCompass. You are a highly knowledgeable and supportive career assistant. You are assisting a user explore career options and make informed decisions based on their interests, education, skills, and preferences. Each time the user converses with you, make sure the context is professional and about their career and that you are providing a helpful response. If the user asks you to do something that is not about a career guidance you should refuse to respond. Keep responses concise yet informative. Use bullet points or numbered lists to break down complex topics into digestible steps."
 conversation_history = [SystemMessage(content=SYSTEM_PROMPT)]
+user_visible_history = []
 
 # Request models
 class QueryRequest(BaseModel):
@@ -129,11 +130,13 @@ Context:
 
 Answer:"""
             conversation_history.append(HumanMessage(content=full_prompt))
+            user_visible_history.append({"role": "user", "content": request.query})
         else:
             conversation_history.append(HumanMessage(content=request.query))
-        
+            user_visible_history.append({"role": "user", "content": request.query})
         assistant_reply = chat_model.invoke(conversation_history)
         conversation_history.append(assistant_reply)
+        user_visible_history.append({"role": "assistant", "content": assistant_reply.content})
         return {"query": request.query, "response": assistant_reply.content}
     except Exception as e:
         logger.error(f"Error in chatbot endpoint: {str(e)}")
@@ -148,18 +151,19 @@ async def exit_chat(request: Request):
         if not username:
             raise HTTPException(status_code=400, detail="Username missing in exit request.")
 
-        history_data = [
-            {"role": "system", "content": conversation_history[0].content}
-        ] + [
-            {"role": "user" if isinstance(msg, HumanMessage) else "assistant", "content": msg.content}
-            for msg in conversation_history[1:]
-        ]
+        # history_data = [
+        #     {"role": "system", "content": conversation_history[0].content}
+        # ] + [
+        #     {"role": "user" if isinstance(msg, HumanMessage) else "assistant", "content": msg.content}
+        #     for msg in conversation_history[1:]
+        # ]
 
-        chat_id = save_chat_history(username, history_data)
+        chat_id = save_chat_history(username, user_visible_history)
 
         logger.info(f"Chat history saved for {username} with chat_id: {chat_id}")
 
         conversation_history = [SystemMessage(content=SYSTEM_PROMPT)]
+        user_visible_history = []
 
         return {"message": "Conversation saved and chat reset.", "chat_id": chat_id}
     except Exception as e:
