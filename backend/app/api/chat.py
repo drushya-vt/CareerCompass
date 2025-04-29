@@ -191,6 +191,7 @@ async def list_saved_chats(request: Request):
 # Endpoint: Resume a saved conversation
 @router.get("/resume/{chat_id}")
 async def resume_conversation(chat_id: str, request: Request):
+    global user_visible_history
     try:
         username = request.query_params.get("username")
         if not username:
@@ -201,7 +202,7 @@ async def resume_conversation(chat_id: str, request: Request):
             raise HTTPException(status_code=404, detail="Conversation not found.")
 
         conversation = record["history"]
-
+        user_visible_history = record["history"].copy()
         global conversation_history
         conversation_history = []
         for message in conversation:
