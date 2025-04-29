@@ -74,6 +74,7 @@ def query_vector_store(query: str, n_results: int = 3):
 @router.post("/chatbot")
 async def chatbot_endpoint(request: ChatRequest):
     global conversation_history
+    global user_visible_history
     try:
         if len(conversation_history) == 1:  # Only the system prompt exists
             context_results = query_vector_store(request.query, n_results=3)
@@ -146,6 +147,7 @@ Answer:"""
 @router.post("/exit")
 async def exit_chat(request: Request):
     global conversation_history
+    global user_visible_history
     try:
         username = request.query_params.get("username")
         if not username:
