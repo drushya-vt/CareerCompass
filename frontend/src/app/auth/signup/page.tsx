@@ -17,6 +17,21 @@ export default function Signup() {
     e.preventDefault();
     setError('');
 
+    if (!email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    if (username.length < 3) {
+      setError('Username must be at least 3 characters long');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/signup`, {
         method: 'POST',

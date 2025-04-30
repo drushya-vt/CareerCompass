@@ -3,6 +3,7 @@ import Link from 'next/link'
 import logo5 from '../resources/logo5.png'
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from "next/navigation";
+import React from 'react';
 
 export default function Header() {
 
@@ -14,9 +15,10 @@ export default function Header() {
  
 
   useEffect(() => {
-    setUsername(localStorage.getItem("username"));
-    setLoggedIn(!!username)
-  }, []);
+    const storedUsername = localStorage.getItem("username");
+    setUsername(storedUsername);
+    setLoggedIn(!!storedUsername);
+  }, [pathname]);
 
   const handleLogout = async () => {
     if (!username) return
@@ -26,7 +28,7 @@ export default function Header() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username }),
     }).then(() => {
-      localStorage.removeItem('username')
+      localStorage.removeItem('username');
       setLoggedIn(false)
       router.push("/");
     }).catch(err => console.error("Logout failed", err))
@@ -35,8 +37,13 @@ export default function Header() {
   const isAuthPage = pathname === "/auth/login" || pathname === "/auth/signup";
 
   return (
-    <header className="header bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%]
-">
+    <header
+      className={`header ${
+        pathname === "/homepage"
+          ? "bg-transparent shadow-none border-none outline-none"
+          : "bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%] shadow-lg"
+      }`}
+    >
       <div className="header-container">
         <Link href="/" className="logo-container">
           <div className="relative w-10 h-10">
@@ -47,7 +54,7 @@ export default function Header() {
  
         {!isAuthPage && (
           <nav>
-            <ul className="flex space-x-6 text-base font-bold text-white">
+            <ul className="flex items-center space-x-4 text-base font-bold text-white">
               <li><Link href="/" className="hover:text-black">Home</Link></li>
               {loggedIn && (
                 <>
@@ -57,16 +64,23 @@ export default function Header() {
               )}
               {loggedIn ? (
                 <li>
-                  <button onClick={handleLogout} className="secondary-button hover:text-black">
+                  <button onClick={handleLogout} className="secondary-button text-sm px-3 hover:text-black">
                     Log Out
                   </button>
                 </li>
               ) : (
+                <>
                 <li>
-                  <Link href="/auth/login" className="secondary-button hover:text-black">
-                    Log In
-                  </Link>
-                </li>
+                    <Link href="/auth/signup" className="secondary-button text-sm px-3 hover:text-black">
+                      Sign Up
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/auth/login" className="secondary-button text-sm px-3 hover:text-black">
+                      Log In
+                    </Link>
+                  </li>
+                </>
               )}
             </ul>
           </nav>

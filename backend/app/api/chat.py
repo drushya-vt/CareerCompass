@@ -15,8 +15,7 @@ from langchain_openai import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage, AIMessage
 
 from fastapi import Request
-from dynamodb.dynamodb_client import save_chat_history, get_chat_history
-
+from dynamodb.dynamodb_client import save_chat_history, get_chat_history, delete_chat_history
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -218,6 +217,22 @@ async def resume_conversation(chat_id: str, request: Request):
         logger.error(f"Error resuming conversation: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.delete("/delete/{chat_id}")
+async def delete_chat(chat_id: str, request: Request):
+    try:
+        username = request.query_params.get("username")
+        if not username:
+            raise HTTPException(status_code=400, detail="Username missing in delete request.")
+        
+        success = delete_chat_history(user_id=username, chat_id=chat_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Chat not found or already deleted.")
+        
+        logger.info(f"Chat '{chat_id}' deleted successfully for user {username}")
+        return {"message": f"Chat '{chat_id}' deleted successfully."}
+    except Exception as e:
+        logger.error(f"Error deleting chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # @router.post("/query")
 # async def process_query(request: QueryRequest):

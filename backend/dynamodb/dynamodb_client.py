@@ -78,3 +78,18 @@ def get_chat_history(user_id: str = None, chat_id: str = None):
         )
         return response.get("Items", [])
     raise ValueError("Must provide either user_id or chat_id")
+
+def delete_chat_history(user_id: str, chat_id: str) -> bool:
+    try:
+        # Retrieve the chat item by chat_id
+        response = chat_table.get_item(Key={"chat_id": chat_id})
+        item = response.get("Item")
+        
+        # Ensure it belongs to the requesting user
+        if item and item.get("user_id") == user_id:
+            chat_table.delete_item(Key={"chat_id": chat_id})
+            return True
+        return False
+    except Exception as e:
+        print(f"Error deleting chat history: {e}")
+        return False

@@ -16,6 +16,11 @@ export default function Login() {
     e.preventDefault();
     setError('');
 
+    if (username.trim() === '' || password.trim() === '') {
+      setError('Username and password are required');
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/login`, {
         method: 'POST',

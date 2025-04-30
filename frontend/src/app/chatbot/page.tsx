@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 import logo5 from "../../resources/logo5.png";
 import arrow from "../../resources/arrow.png";
 import graph from "../../resources/graph.png";
@@ -20,10 +21,12 @@ interface Message {
 interface SavedChat {
   chatId: string;
   timestamp: string;
+  preview?: string;
 }
 
 export default function Chatbot() {
   const chatRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState("");
   const [showPrompts, setShowPrompts] = useState(true);
@@ -32,11 +35,18 @@ export default function Chatbot() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
   const [username, setUsername] = useState<string | null>(null);
 
-  // On page load
   useEffect(() => {
-    setUsername(localStorage.getItem("username"));
+    const storedUsername = localStorage.getItem("username");
+    setUsername(storedUsername);
     setShowPrompts(true);
+    fetchHistory();
   }, []);
+  
+  useEffect(() => {
+    if (username) {
+      fetchHistory();
+    }
+  }, [username]);
 
   useEffect(() => {
     if (chatRef.current) {
@@ -135,10 +145,20 @@ export default function Chatbot() {
       // ✅ Sort chats by latest timestamp first
       chats.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-      const previews: SavedChat[] = chats.map((item: any) => ({
-        chatId: item.chat_id,
-        timestamp: item.timestamp,
-      }));
+
+      const previews: SavedChat[] = chats.map((item: any) => {
+        let previewText = "";
+        if (Array.isArray(item.history)) {
+          const firstUserMessage = item.history.find((msg: any) => msg.role === "user");
+          const sliceLength = getDynamicSliceLength();
+          previewText = firstUserMessage?.content?.slice(0, sliceLength) + "..." || "";
+        }
+        return {
+          chatId: item.chat_id,
+          timestamp: item.timestamp,
+          preview: previewText || new Date(item.timestamp).toLocaleString()
+        };
+      });
       setSavedChats(previews);
     } catch (error) {
       console.error("Error fetching history:", error);
@@ -185,11 +205,44 @@ export default function Chatbot() {
 
   const isMessageEmpty = userInput.trim() === "";
 
+  // Delete chat handler
+  const handleDeleteChat = async (chatId: string) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/delete/${chatId}?username=${encodeURIComponent(username!)}`, {
+        method: "DELETE"
+      });
+      if (!res.ok) throw new Error("Failed to delete chat");
+      setSavedChats((prev) => prev.filter((chat) => chat.chatId !== chatId));
+      setInfoMessage("Chat deleted.");
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+      setInfoMessage("Error deleting chat.");
+    }
+  };
+
+
+      const getDynamicSliceLength = () => {
+        const vw = window.innerWidth;
+        const minChars = 20;
+        const maxChars = 120;
+        const scale = (vw - 320) / (1920 - 320); // scale from min to max width
+        return Math.max(
+          minChars,
+          Math.min(
+            maxChars,
+            Math.floor(minChars + scale * (maxChars - minChars))
+          )
+        );
+      };
+
   return (
     <div className="outer-interface">
       {/* === Left Nav === */}
       <div className="chat-side-nav header bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%] flex flex-col">
-        <div className="chat-header flex items-center space-x-4 p-4">
+        <div
+          className="chat-header flex items-center space-x-4 p-4 cursor-pointer"
+          onClick={() => router.push("/")}
+        >
           <Image src={logo5} alt="CareerCompass Logo" className="w-10 h-30" />
           <span className="logo-name">CareerCompass</span>
         </div>
@@ -204,24 +257,43 @@ export default function Chatbot() {
           <Image src={arrow} alt="arrow" className="w-8 h-auto" />
         </div>
 
-        <div className="chat-history flex-1 flex flex-col overflow-hidden p-4">
-          <div className="flex gap-2 mb-4 flex-col">
-            <button onClick={handleNewChat} className="newchat-button">
-              ➕ New Conversation
-            </button>
-            <button onClick={fetchHistory} className="newchat-button">
-              🔄 Refresh History
-            </button>
-          </div>
+        <div className="flex gap-4 mt-6 justify-center items-center">
+          <button
+            onClick={fetchHistory}
+            className="px-4 py-2 text-white font-semibold text-sm rounded-lg border border-white hover:bg-white hover:text-[var(--primary-blue)] transition"
+          >
+            Refresh History
+          </button>
+          <button
+            onClick={handleNewChat}
+            className="px-4 py-2 text-white font-semibold text-sm rounded-lg border border-white hover:bg-white hover:text-[var(--primary-blue)] transition"
+          >
+            New Chat
+          </button>
+        </div>
 
-          <ul className="chat-history-list flex-1 overflow-y-auto pr-2">
-            {savedChats.map(({ chatId, timestamp }) => (
-              <li key={chatId}>
+        <div className="chat-history flex-1 flex flex-col overflow-hidden p-4 w-full h-full">
+          
+          <div className="w-1/2 h-px bg-white/40 mx-auto mb-2" />
+          <p className="text-white font-semibold text-sm text-center mt-1 mb-2 w-full px-2">Chat History</p>
+
+          <ul className="chat-history-list flex-1 overflow-y-auto px-0 space-y-0.5">
+            {savedChats.map(({ chatId, preview }) => (
+              <li key={chatId} className="relative">
                 <button
-                  className="chat-history-item"
+                  className="chat-history-item w-full pr-8"
                   onClick={() => resumeChat(chatId)}
                 >
-                  {new Date(timestamp).toLocaleString()}
+                  <span className="block text-left truncate w-full">{preview}</span>
+                </button>
+                <button
+                  className="absolute top-1/2 -translate-y-3/4 right-1 text-white hover:text-red-500 transition p-1"
+                  onClick={() => handleDeleteChat(chatId)}
+                  title="Delete chat"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M10 3h4a1 1 0 011 1v1H9V4a1 1 0 011-1z" />
+                  </svg>
                 </button>
               </li>
             ))}
@@ -232,11 +304,11 @@ export default function Chatbot() {
 
       {/* === Main Chat Area === */}
       <div className="main-chat-interface flex flex-col justify-between">
-        <div className="flex justify-end p-4 bg-white shadow">
+        <div className="flex justify-end p-2 bg-transparent shadow-none">
           <LogoutButton />
         </div>
 
-        <div className="chat flex-1 overflow-y-auto p-4" ref={chatRef}>
+        <div className="chat flex-1 overflow-y-auto p-4 text-sm" ref={chatRef}>
           {messages.map((msg, index) => (
             <div key={index} className={msg.type === "user" ? "user-message" : "bot-message"}>
               {msg.type === "bot" ? (
@@ -278,12 +350,15 @@ export default function Chatbot() {
         )}
 
         {/* === User Input Section === */}
-        <div className="user-input border-t border-gray-200 p-4 bg-white">
-          <form onSubmit={handleSubmit} className="form-elements flex items-center gap-4">
+        <div className="user-input px-0 py-0 bg-white">
+          <form
+            onSubmit={handleSubmit}
+            className="form-elements flex items-center gap-1 rounded-xl border border-gray-300 px-4 py-2 bg-gray-50 shadow-sm"
+          >
             <textarea
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
-              className="auto-expand user-query flex-1 border border-gray-300 rounded-xl p-2 resize-none"
+              className="auto-expand user-query flex-1 text-sm border-none bg-transparent focus:outline-none resize-none max-h-32 overflow-y-auto"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey && !isMessageEmpty) {
                   e.preventDefault();
@@ -300,15 +375,14 @@ export default function Chatbot() {
                 isMessageEmpty ? "opacity-50 cursor-not-allowed" : "opacity-100"
               }`}
             >
-              <Image src={send} alt="Send Button" className="w-10 h-auto" />
+              <Image src={send} alt="Send Button" className="w-8 h-auto opacity-80 hover:opacity-100 transition" />
             </button>
-
             <button
               type="button"
               onClick={handleExit}
               className="transition-opacity duration-200"
             >
-              <Image src={save} alt="Save Button" className="w-10 h-auto" />
+              <Image src={save} alt="Save Button" className="w-8 h-auto opacity-80 hover:opacity-100 transition" />
             </button>
           </form>
         </div>
