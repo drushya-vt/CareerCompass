@@ -6,6 +6,7 @@ import chatbot2 from "../../resources/chatbot2.png";
 import dashboard from "../../resources/dashboard.png";
 import chatpreview from "../../resources/chatpreview.png";
 import chat3 from "../../resources/chat3.png";
+import WagesInAmerica from "@/components/WagesPages";
 
 export default function Home() {
   return (

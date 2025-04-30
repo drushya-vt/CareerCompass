@@ -1,6 +1,7 @@
 // app/datavisualization/page.tsx
 import TableauEmbed from "../../components/TableauEmbed";
 
+
 export default function DataVisualizationPage() {
   return (
     <main className="p-10 bg-gray-50">

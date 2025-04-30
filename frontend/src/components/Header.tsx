@@ -35,8 +35,7 @@ export default function Header() {
   const isAuthPage = pathname === "/auth/login" || pathname === "/auth/signup";
 
   return (
-    <header className="header bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%]
-">
+    <header className="header bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%]">
       <div className="header-container">
         <Link href="/" className="logo-container">
           <div className="relative w-10 h-10">
