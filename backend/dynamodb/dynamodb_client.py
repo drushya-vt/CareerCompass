@@ -93,3 +93,4 @@ def delete_chat_history(user_id: str, chat_id: str) -> bool:
     except Exception as e:
         print(f"Error deleting chat history: {e}")
         return False
+    

@@ -8,6 +8,7 @@ import chat3 from "../../resources/chat3.png";
 import { useState, useEffect } from 'react'
 import Header from '@/components/Header'
 import {ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+import WagesInAmerica from "@/components/WagesPages";
 
 export default function Home() {
   const [loggedIn, setLoggedIn] = useState(false);

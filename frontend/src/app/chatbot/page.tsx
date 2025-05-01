@@ -15,7 +15,7 @@ import LogoutButton from "@/components/LogoutButton";
 
 interface Message {
   type: string;
-  text: string;
+  text: string; // 'user' | 'bot' | 'system'
 }
 
 interface SavedChat {
@@ -34,14 +34,15 @@ export default function Chatbot() {
   const [infoMessage, setInfoMessage] = useState("");
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
   const [username, setUsername] = useState<string | null>(null);
+  const saveTimer = useRef<NodeJS.Timeout | null>(null);
 
+  // Load username on mount
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
     setUsername(storedUsername);
     setShowPrompts(true);
-    fetchHistory();
   }, []);
-  
+
   useEffect(() => {
     if (username) {
       fetchHistory();
@@ -54,11 +55,32 @@ export default function Chatbot() {
     }
   }, [messages]);
 
+  // Auto-save conversation after a debounce
+  useEffect(() => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      if (!username || messages.length === 0) return;
+      try {
+        await fetch(`${API_BASE_URL}/exit?username=${encodeURIComponent(username)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ conversation: messages }),
+        });
+      } catch (error) {
+        console.error("Auto-save error:", error);
+      }
+    }, 3000);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, [messages, username]);
+
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!userInput.trim()) return;
-    setMessages((prev) => [...prev, { type: "user", text: userInput }]);
-    const currentInput = userInput;
+    const currentInput = userInput.trim();
+    setMessages(prev => [...prev, { type: 'user', text: currentInput }]);
     setUserInput("");
     setShowPrompts(false);
 
@@ -69,20 +91,17 @@ export default function Chatbot() {
         body: JSON.stringify({ query: currentInput }),
       });
       const data = await res.json();
-      setMessages((prev) => [...prev, { type: "bot", text: data.response }]);
+      setMessages(prev => [...prev, { type: 'bot', text: data.response }]);
     } catch (error) {
       console.error("Error:", error);
-      setMessages((prev) => [
-        ...prev,
-        { type: "bot", text: "Sorry, something went wrong. Please try again." },
-      ]);
+      setMessages(prev => [...prev, { type: 'bot', text: "⚠️ Sorry, something went wrong." }]);
     }
   };
 
   const handleExampleClick = async (prompt: string) => {
     setShowPrompts(false);
     setUserInput("");
-    setMessages((prev) => [...prev, { type: "user", text: prompt }]);
+    setMessages(prev => [...prev, { type: 'user', text: prompt }]);
 
     try {
       const res = await fetch(`${API_BASE_URL}/chatbot`, {
@@ -94,13 +113,10 @@ export default function Chatbot() {
       });
 
       const data = await res.json();
-      setMessages((prev) => [...prev, { type: "bot", text: data.response }]);
+      setMessages(prev => [...prev, { type: 'bot', text: data.response }]);
     } catch (error) {
       console.error("Error:", error);
-      setMessages((prev) => [
-        ...prev,
-        { type: "bot", text: "Sorry, something went wrong. Please try again." },
-      ]);
+      setMessages(prev => [...prev, { type: 'bot', text: "⚠️ Sorry, something went wrong." }]);
     }
   };
 
@@ -133,32 +149,43 @@ export default function Chatbot() {
         console.error("No username found in localStorage");
         return;
       }
-      const res = await fetch(
-        `${API_BASE_URL}/history?username=${encodeURIComponent(username)}`,
-        {
-          method: "GET",
-        }
-      );
+      const res = await fetch(`${API_BASE_URL}/history?username=${encodeURIComponent(username)}`);
       const data = await res.json();
-      const chats = data.saved_chats || [];
+      const rawChats = data.saved_chats || [];
 
-      // ✅ Sort chats by latest timestamp first
-      chats.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      // Filter out chats with no user messages
+      const previews: SavedChat[] = [];
 
+      await Promise.all(
+        rawChats.map(async (item: any) => {
+          try {
+            const convRes = await fetch(`${API_BASE_URL}/resume/${item.chat_id}?username=${encodeURIComponent(username)}`);
+            const convData = await convRes.json();
 
-      const previews: SavedChat[] = chats.map((item: any) => {
-        let previewText = "";
-        if (Array.isArray(item.history)) {
-          const firstUserMessage = item.history.find((msg: any) => msg.role === "user");
-          const sliceLength = getDynamicSliceLength();
-          previewText = firstUserMessage?.content?.slice(0, sliceLength) + "..." || "";
-        }
-        return {
-          chatId: item.chat_id,
-          timestamp: item.timestamp,
-          preview: previewText || new Date(item.timestamp).toLocaleString()
-        };
-      });
+            const conversation = convData.conversation;
+            const hasUserTurn = Array.isArray(conversation) &&
+              conversation.some((msg: any) => msg.role === "user");
+
+            if (hasUserTurn) {
+              const firstUserMessage = conversation.find((msg: any) => msg.role === "user");
+              const sliceLength = getDynamicSliceLength();
+              const previewText = firstUserMessage?.content?.slice(0, sliceLength) + "..." || "";
+
+              previews.push({
+                chatId: item.chat_id,
+                timestamp: item.timestamp,
+                preview: previewText || new Date(item.timestamp).toLocaleString()
+              });
+            }
+          } catch (e) {
+            console.error("Error checking chat:", item.chat_id, e);
+          }
+        })
+      );
+
+      // Sort most recent first
+      previews.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
       setSavedChats(previews);
     } catch (error) {
       console.error("Error fetching history:", error);
@@ -172,21 +199,15 @@ export default function Chatbot() {
         console.error("No username found in localStorage");
         return;
       }
-      const res = await fetch(
-        `${API_BASE_URL}/resume/${chatId}?username=${encodeURIComponent(username)}`,
-        { method: "GET" }
-      );
+      const res = await fetch(`${API_BASE_URL}/resume/${chatId}?username=${encodeURIComponent(username)}`);
       const data = await res.json();
       setInfoMessage("Chat resumed");
 
-      const resumedMessages: Message[] = data.conversation.map(
-        (msg: { role: string; content: string }) => {
-          if (msg.role === "system") return { type: "system", text: msg.content };
-          if (msg.role === "user") return { type: "user", text: msg.content };
-          if (msg.role === "assistant") return { type: "bot", text: msg.content };
-          return { type: "user", text: msg.content };
-        }
-      );
+      const resumedMessages: Message[] = data.conversation.map((msg: any) => ({
+        type: msg.role === 'user' ? 'user' : msg.role === 'assistant' ? 'bot' : 'system',
+        text: msg.content
+      }));
+
       setMessages(resumedMessages);
 
       setShowPrompts(false); // ✅ Hide "Try Asking" when resuming
@@ -221,19 +242,19 @@ export default function Chatbot() {
   };
 
 
-      const getDynamicSliceLength = () => {
-        const vw = window.innerWidth;
-        const minChars = 20;
-        const maxChars = 120;
-        const scale = (vw - 320) / (1920 - 320); // scale from min to max width
-        return Math.max(
-          minChars,
-          Math.min(
-            maxChars,
-            Math.floor(minChars + scale * (maxChars - minChars))
-          )
-        );
-      };
+  const getDynamicSliceLength = () => {
+    const vw = window.innerWidth;
+    const minChars = 20;
+    const maxChars = 120;
+    const scale = (vw - 320) / (1920 - 320); // scale from min to max width
+    return Math.max(
+      minChars,
+      Math.min(
+        maxChars,
+        Math.floor(minChars + scale * (maxChars - minChars))
+      )
+    );
+  };
 
   return (
     <div className="outer-interface">
@@ -250,9 +271,7 @@ export default function Chatbot() {
         <div className="data-visualization-button p-4">
           <Image src={graph} alt="graph" className="w-10 h-30" />
           <Link href="/datavisualization" target="_blank" rel="noopener noreferrer">
-            <button type="button" className="data-button">
-              View Career Data Dashboard
-            </button>
+            <button type="button" className="data-button">View Career Data Dashboard</button>
           </Link>
           <Image src={arrow} alt="arrow" className="w-8 h-auto" />
         </div>
@@ -273,7 +292,7 @@ export default function Chatbot() {
         </div>
 
         <div className="chat-history flex-1 flex flex-col overflow-hidden p-4 w-full h-full">
-          
+
           <div className="w-1/2 h-px bg-white/40 mx-auto mb-2" />
           <p className="text-white font-semibold text-sm text-center mt-1 mb-2 w-full px-2">Chat History</p>
 
@@ -298,7 +317,6 @@ export default function Chatbot() {
               </li>
             ))}
           </ul>
-          {infoMessage && <p>{infoMessage}</p>}
         </div>
       </div>
 
@@ -371,18 +389,10 @@ export default function Chatbot() {
             <button
               type="submit"
               disabled={isMessageEmpty}
-              className={`transition-opacity duration-200 ${
-                isMessageEmpty ? "opacity-50 cursor-not-allowed" : "opacity-100"
-              }`}
+              className={`transition-opacity duration-200 ${isMessageEmpty ? "opacity-50 cursor-not-allowed" : "opacity-100"
+                }`}
             >
-              <Image src={send} alt="Send Button" className="w-8 h-auto opacity-80 hover:opacity-100 transition" />
-            </button>
-            <button
-              type="button"
-              onClick={handleExit}
-              className="transition-opacity duration-200"
-            >
-              <Image src={save} alt="Save Button" className="w-8 h-auto opacity-80 hover:opacity-100 transition" />
+              <Image src={send} alt="Send" className="w-8 h-auto opacity-80 hover:opacity-100 transition" />
             </button>
           </form>
         </div>
