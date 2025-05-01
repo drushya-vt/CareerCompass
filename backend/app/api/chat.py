@@ -64,8 +64,8 @@ def query_vector_store(query: str, n_results: int = 3):
     return collection.query(query_embeddings=[query_embedding], n_results=n_results)
 
 @router.post("/chatbot")
-async def chatbot_endpoint(request: ChatRequest, fastapi_request: Request):
-    username = fastapi_request.query_params.get("username")
+async def chatbot_endpoint(chat: ChatRequest, request: Request):
+    username = request.query_params.get("username")
     if not username:
         raise HTTPException(status_code=400, detail="Username is required.")
 
@@ -77,10 +77,10 @@ async def chatbot_endpoint(request: ChatRequest, fastapi_request: Request):
     visible_history = user_visible_histories[username]
 
     if len(conversation_history) == 1:
-        context_results = query_vector_store(request.query, n_results=3)
+        context_results = query_vector_store(chat.query, n_results=3)
         if not context_results or not context_results.get("documents") or not context_results["documents"][0]:
             fallback = "I couldn't find much information."
-            return {"query": request.query, "response": fallback}
+            return {"query": chat.query, "response": fallback}
 
         context_str = ""
         for i, doc in enumerate(context_results['documents'][0][:3]):
@@ -91,17 +91,17 @@ async def chatbot_endpoint(request: ChatRequest, fastapi_request: Request):
             context_str += f"**🛠️ Key Skills:**\n- {doc_lines[2][7:][:100]}...\n"
             context_str += f"**🎓 Education:**\n- {doc_lines[3][10:][:100]}...\n"
 
-        full_prompt = f"""You are a career guidance assistant...\n\nQuery: {request.query}\n\nContext:\n{context_str}\n\nAnswer:"""
+        full_prompt = f"""You are a career guidance assistant...\n\nQuery: {chat.query}\n\nContext:\n{context_str}\n\nAnswer:"""
         conversation_history.append(HumanMessage(content=full_prompt))
     else:
-        conversation_history.append(HumanMessage(content=request.query))
+        conversation_history.append(HumanMessage(content=chat.query))
 
-    visible_history.append({"role": "user", "content": request.query})
+    visible_history.append({"role": "user", "content": chat.query})
     assistant_reply = chat_model.invoke(conversation_history)
     conversation_history.append(assistant_reply)
     visible_history.append({"role": "assistant", "content": assistant_reply.content})
 
-    return {"query": request.query, "response": assistant_reply.content}
+    return {"query": chat.query, "response": assistant_reply.content}
 
 @router.post("/exit")
 async def exit_chat(request: Request):
