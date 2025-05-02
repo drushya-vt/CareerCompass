@@ -53,7 +53,11 @@ export default function Chatbot() {
     setShowPrompts(false);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/chatbot`, {
+      if (!username) {
+        console.error("No username found in localStorage");
+        return;
+      }
+      const res = await fetch(`${API_BASE_URL}/chatbot?username=${encodeURIComponent(username)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: currentInput }),
@@ -75,7 +79,11 @@ export default function Chatbot() {
     setMessages((prev) => [...prev, { type: "user", text: prompt }]);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/chatbot`, {
+      if (!username) {
+        console.error("No username found in localStorage");
+        return;
+      }
+      const res = await fetch(`${API_BASE_URL}/chatbot?username=${encodeURIComponent(username)}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -46,7 +46,6 @@ SYSTEM_PROMPT = "You are a chatbot named CareerCompass..."
 # Per-user memory
 user_conversations = {}
 user_visible_histories = {}
-user_should_reset = set()
 
 # Request models
 class QueryRequest(BaseModel):
@@ -73,10 +72,9 @@ async def chatbot_endpoint(chat: ChatRequest, request: Request):
     # if username not in user_conversations:
     #     user_conversations[username] = [SystemMessage(content=SYSTEM_PROMPT)]
     #     user_visible_histories[username] = []
-    if username in user_should_reset or username not in user_conversations:
+    if username not in user_conversations:
         user_conversations[username] = [SystemMessage(content=SYSTEM_PROMPT)]
         user_visible_histories[username] = []
-        user_should_reset.discard(username)
 
     conversation_history = user_conversations[username]
     visible_history = user_visible_histories[username]
@@ -117,10 +115,9 @@ async def exit_chat(request: Request):
     history_to_save = user_visible_histories.get(username, [])
     chat_id = save_chat_history(username, history_to_save)
     logger.info(f"Chat history saved for {username} with chat_id: {chat_id}")
-    # Mark for reset on next message
-    user_should_reset.add(username)
-    # user_conversations[username] = [SystemMessage(content=SYSTEM_PROMPT)]
-    # user_visible_histories[username] = []
+    user_conversations[username] = [SystemMessage(content=SYSTEM_PROMPT)]
+    user_visible_histories[username] = []
+
 
     return {"message": "Conversation saved and chat reset.", "chat_id": chat_id}
 
