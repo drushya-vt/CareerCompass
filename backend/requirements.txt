@@ -7,3 +7,5 @@ tiktoken
 uvicorn
 langchain-openai
 langchain
+boto3
+dotenv
