@@ -66,9 +66,7 @@ def query_vector_store(query: str, n_results: int = 3):
 
 @router.post("/chatbot")
 async def chatbot_endpoint(chat: ChatRequest, request: Request):
-    username = request.query_params.get("username")
-    if not username:
-        raise HTTPException(status_code=400, detail="Username is required.")
+    username = request.query_params.get("username") or "__anonymous__"
 
     # if username not in user_conversations:
     #     user_conversations[username] = [SystemMessage(content=SYSTEM_PROMPT)]
