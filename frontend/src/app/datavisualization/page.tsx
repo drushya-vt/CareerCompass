@@ -8,7 +8,11 @@ export default function DataVisualizationPage() {
       <h1 className="text-3xl font-bold mb-6 text-center text-blue-800">
         📊 Career Data Dashboard
       </h1>
-      <TableauEmbed />
+      <TableauEmbed
+        id="careerCompassDashboard"
+        name="Ca/CareerCompass/MajorOccGroup"
+        className="rounded-xl shadow w-full h-[85vh] md:h-[90vh] lg:h-screen"
+      />
     </main>
   );
 }

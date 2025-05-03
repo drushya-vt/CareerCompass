@@ -1,6 +1,7 @@
 "use client";
 
 import Head from "next/head";
+import TableauEmbed from "./TableauEmbed";
 
 export default function WagesInAmerica() {
   return (
@@ -33,14 +34,11 @@ export default function WagesInAmerica() {
               At the national level, wages vary significantly. Some Americans earn under $30,000 annually,
               while others make six figures or more.
             </p>
-            <iframe
-              src='https://public.tableau.com/static/images/Sa/Salary-1_17457933491730/WageHist/1_rss.png' 
-              width="100%"
-              height="500"
-              frameBorder="0"
-              allowFullScreen
+            <TableauEmbed
+              id="viz1745886677094"
+              name="Salary-1_17457933491730/WageHist"
               className="rounded-xl shadow"
-            ></iframe>
+            />
           </section>
 
           {/* Section: By State */}
@@ -50,14 +48,11 @@ export default function WagesInAmerica() {
               Geography plays a major role in wages. States with high costs of living—California,
               New York, and Massachusetts—typically offer higher wages.
             </p>
-            <iframe
-              src='https://public.tableau.com/static/images/Sa/Salary-2_17457934519330/Dashboard5/1_rss.png'
-              width="100%"
-              height="500"
-              frameBorder="0"
-              allowFullScreen
+            <TableauEmbed
+              id="viz1745886846618"
+              name="Salary-2_17457934519330/Dashboard5"
               className="rounded-xl shadow"
-            ></iframe>
+            />
           </section>
 
           {/* Section: By Major Occupation Group */}
@@ -67,14 +62,11 @@ export default function WagesInAmerica() {
               Different industries offer different levels of compensation. For instance, legal jobs are fewer
               but generally high-paying, while production roles are more numerous with varied wages.
             </p>
-            <iframe
-              src='https://public.tableau.com/static/images/Sa/Salary-3/Dashboard6/1_rss.png'
-              width="100%"
-              height="500"
-              frameBorder="0"
-              allowFullScreen
+            <TableauEmbed
+              id="viz1745886913767"
+              name="Salary-3/Dashboard6"
               className="rounded-xl shadow"
-            ></iframe>
+            />
           </section>
 
           {/* Section: By Detailed Occupation */}
@@ -84,14 +76,11 @@ export default function WagesInAmerica() {
               Even within the same group, roles vary. For example, surgeons earn far more than EMTs or
               physical therapists. Similarly, professors out-earn preschool teachers.
             </p>
-            <iframe
-              src='https://public.tableau.com/static/images/Sa/Salary-4/Wage/1_rss.png'
-              width="100%"
-              height="500"
-              frameBorder="0"
-              allowFullScreen
+            <TableauEmbed
+              id="viz1745887568216"
+              name="Salary-6/Dashboard8"
               className="rounded-xl shadow"
-            ></iframe>
+            />
           </section>
 
           {/* Key Takeaways */}
