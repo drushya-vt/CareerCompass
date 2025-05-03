@@ -56,24 +56,25 @@ export default function Chatbot() {
   }, [messages]);
 
   // Auto-save conversation after a debounce
-  useEffect(() => {
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(async () => {
-      if (!username || messages.length === 0) return;
-      try {
-        await fetch(`${API_BASE_URL}/exit?username=${encodeURIComponent(username)}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ conversation: messages }),
-        });
-      } catch (error) {
-        console.error("Auto-save error:", error);
-      }
-    }, 3000);
-    return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-    };
-  }, [messages, username]);
+  // useEffect(() => {
+  //   if (saveTimer.current) clearTimeout(saveTimer.current);
+  //   saveTimer.current = setTimeout(async () => {
+  //     if (!username || messages.length === 0) return;
+  //     try {
+  //       await fetch(`${API_BASE_URL}/exit?username=${encodeURIComponent(username)}`, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ conversation: messages }),
+  //       });
+  //     } catch (error) {
+  //       console.error("Auto-save error:", error);
+  //     }
+  //   }, 3000);
+  //   return () => {
+  //     if (saveTimer.current) clearTimeout(saveTimer.current);
+  //   };
+  // }, [messages, username]);
+
 
 
   const handleSubmit = async (e: FormEvent) => {
@@ -400,9 +401,19 @@ export default function Chatbot() {
             >
               <Image src={send} alt="Send" className="w-8 h-auto opacity-80 hover:opacity-100 transition" />
             </button>
+            <button
+              type="submit"
+              className={`transition-opacity duration-200
+                }`}
+                onClick={handleExit}
+            >
+              <Image src={send} alt="Send" className="w-8 h-auto opacity-80 hover:opacity-100 transition" />
+            </button>
           </form>
         </div>
       </div>
     </div>
   );
 }
+
+  
