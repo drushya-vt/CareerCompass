@@ -10,7 +10,7 @@ export default function DataVisualizationPage() {
       </h1>
       <TableauEmbed
         id="careerCompassDashboard"
-        name="Ca/CareerCompass/MajorOccGroup"
+        name="CareerCompass/MajorOccGroup"
         className="rounded-xl shadow w-full h-[85vh] md:h-[90vh] lg:h-screen"
       />
     </main>
