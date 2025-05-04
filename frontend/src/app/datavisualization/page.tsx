@@ -15,12 +15,12 @@ export default function DataVisualizationPage() {
     <main className="bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%] min-h-screen text-white">
       <Header/>
       {/* Hero Intro */}
-      <section className="mt-16 max-w-3xl mx-auto text-center mb-12">
+      <section className="mt-8 max-w-3xl mx-auto text-center mb-12">
 
         <div className="inline-flex items-center gap-3 justify-center">
           <h1 className="text-5xl font-extrabold text-white">Career Insights</h1>
         </div>
-        <p className="mt-6 text-xl text-white/90 mb-4">
+        <p className="mt-2 text-base text-white/90 mb-4">
           Dive into interactive data stories—compare wages, explore employment trends,
           and uncover the skills powering tomorrow's careers.
         </p>
@@ -90,7 +90,7 @@ export default function DataVisualizationPage() {
         </Link>
       </div>
 
-      <div className="mt-16 text-center">
+      <div className="mt-3 p-6 text-center">
         <p className="text-base text-white/80 mb-4">
           Ready for personalized guidance? Our Chatbot can help interpret these insights—return now to continue your discussion.
         </p>
