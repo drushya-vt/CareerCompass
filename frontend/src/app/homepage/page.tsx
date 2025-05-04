@@ -5,6 +5,7 @@ import logo5 from '../../resources/logo5.png'
 import chatbot2 from "../../resources/chatbot2.png";
 import dashboard from "../../resources/dashboard.png";
 import chat3 from "../../resources/chat3.png";
+import onetImage from "../../resources/onet_p.svg";
 import { useState, useEffect } from 'react'
 import Header from '@/components/Header'
 import {ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
@@ -66,7 +67,6 @@ export default function Home() {
           </div>
         </section>
 
-
         {/* === About Section === */}
         <section className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl shadow-lg ">
           <h2 className="text-3xl text-black font-bold text-center mb-1">About CareerCompass</h2>
@@ -81,6 +81,27 @@ export default function Home() {
             </div>
             <p className="text-2xl max-w-xl font-semibold">
               CareerCompass helps you explore personalized career options using advanced AI and occupational data. Whether you're deciding on your major, switching industries, or looking for future job trends, we provide insights based on skills, interests, and goals — all in one place.
+            </p>
+          </div>
+        </section>
+
+        {/* === O*NET Data Section === */}
+        <section className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
+          <h2 className="text-3xl text-black font-bold text-center mb-4">About O*NET Data</h2>
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            {/* Left: O*NET Image */}
+            <div className="flex-shrink-0 mx-auto md:mx-0">
+              <Image
+                src={onetImage}
+                alt="O*NET Database Illustration"
+                width={300}
+                height={300}
+                className="rounded-xl"
+              />
+            </div>
+            {/* Right: O*NET Text */}
+            <p className="text-lg md:text-xl font-medium text-white">
+              The <strong>O*NET&nbsp;29.1 database</strong> is one of the most comprehensive occupational datasets in the U.S., comprising over <strong>30 structured files</strong> totaling approximately <strong>50 MB</strong> of job-related data. We extracted and transformed data from more than <strong>10 key files</strong>, including <strong>skills</strong>, <strong>education levels</strong>, <strong>tools</strong>, <strong>work activities</strong>, and over <strong>15,000 alternate job titles</strong>. Using a custom <strong>preprocessing pipeline</strong>, we merged these fragmented sources into a unified <strong>JSON datastore</strong> covering more than <strong>1,000 occupations</strong>. Each job entry was restructured into clean sections such as <strong>Description</strong>, <strong>Skills</strong>, <strong>Education</strong>, and <strong>Tools</strong>, optimized for use in our <strong>AI-powered RAG system</strong>. This transformation laid the foundation for <strong>high-quality, explainable career recommendations</strong>.
             </p>
           </div>
         </section>

@@ -277,7 +277,7 @@ export default function Chatbot() {
 
         <div className="data-visualization-button p-4">
           <Image src={graph} alt="graph" className="w-10 h-30" />
-          <Link href="/datavisualization" target="_blank" rel="noopener noreferrer">
+          <Link href="/datavisualization">
             <button type="button" className="data-button">View Career Data Dashboard</button>
           </Link>
           <Image src={arrow} alt="arrow" className="w-8 h-auto" />
