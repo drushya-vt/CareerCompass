@@ -86,22 +86,23 @@ export default function Home() {
         </section>
 
         {/* === O*NET Data Section === */}
-        <section className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
-          <h2 className="text-3xl text-black font-bold text-center mb-4">About O*NET Data</h2>
-          <div className="flex flex-col md:flex-row items-center gap-6">
+       <section className="bg-white/10 backdrop-blur-sm p-8 rounded-2xl shadow-lg">
+          <h2 className="text-3xl text-black font-bold text-center mb-1">About O*NET Data</h2>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-center md:text-left">
             {/* Left: O*NET Image */}
-            <div className="flex-shrink-0 mx-auto md:mx-0">
+            <div className="flex-shrink-0">
               <Image
                 src={onetImage}
                 alt="O*NET Database Illustration"
                 width={300}
                 height={300}
-                className="rounded-xl"
               />
             </div>
             {/* Right: O*NET Text */}
-            <p className="text-lg md:text-xl font-medium text-white">
-              The <strong>O*NET&nbsp;29.1 database</strong> is one of the most comprehensive occupational datasets in the U.S., comprising over <strong>30 structured files</strong> totaling approximately <strong>50 MB</strong> of job-related data. We extracted and transformed data from more than <strong>10 key files</strong>, including <strong>skills</strong>, <strong>education levels</strong>, <strong>tools</strong>, <strong>work activities</strong>, and over <strong>15,000 alternate job titles</strong>. Using a custom <strong>preprocessing pipeline</strong>, we merged these fragmented sources into a unified <strong>JSON datastore</strong> covering more than <strong>1,000 occupations</strong>. Each job entry was restructured into clean sections such as <strong>Description</strong>, <strong>Skills</strong>, <strong>Education</strong>, and <strong>Tools</strong>, optimized for use in our <strong>AI-powered RAG system</strong>. This transformation laid the foundation for <strong>high-quality, explainable career recommendations</strong>.
+            <p className="mt-6 text-2xl max-w-xl font-semibold">
+            Under the hood of CareerCompass is the O*NET 29.1 dataset—over 50 MB of richly structured job data drawn from 30+ source files. 
+            We distilled more than 10 core tables (skills, education, tools, work activities, 15K+ alternate job titles) into a single JSON datastore covering 1,000+ occupations. 
+            Each role is neatly organized into Description, Skills, Education, and Tools—fueling our AI-driven RAG engine to deliver clear, actionable career advice.
             </p>
           </div>
         </section>
@@ -131,15 +132,15 @@ export default function Home() {
         {/* === Dashboard Section === */}
         <section className="bg-white/10 backdrop-blur-sm p-8 rounded-2xl shadow-lg">
           <h2 className="text-3xl text-black font-bold text-center mb-8">Career Insights Dashboard</h2>
-          <div className="flex flex-col-reverse md:flex-row items-center justify-center gap-8 text-center md:text-right">
+          <div className="flex flex-col-reverse md:flex-row items-center justify-center gap-8 text-center">
             {/* Text Content */}
             <div className="max-w-xl">
-              <p className="text-xl font-semibold">
+              <p className="text-xl font-semibold md:text-left">
                 Dive into our interactive dashboard to explore real-time labor market trends, in-demand skills, top industries, and future career opportunities. Visualize job growth, compare career paths, and make informed decisions tailored to your goals.
               </p>
               <Link
                 href="/datavisualization"
-                className="inline-block mt-6 bg-white text-black text-xl px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition"
+                className="inline-block mt-6 bg-white text-black text-xl px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition md:text-right"
               >
                 Explore Dashboard
               </Link>

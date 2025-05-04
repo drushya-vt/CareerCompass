@@ -5,7 +5,7 @@ import TableauEmbed from "./TableauEmbed";
 
 export default function WagesInAmerica() {
   return (
-    <>
+    <div className="mt-20">
       <Head>
         <title>Wages in America</title>
       </Head>
@@ -17,7 +17,7 @@ export default function WagesInAmerica() {
 
           <p className="text-lg mb-4">
             One factor to consider when selecting a career is how much you will earn in that job.
-            In this data story, we’ll use wage data from the 2024 release of the Occupational Employment
+            In this data story, we'll use wage data from the 2024 release of the Occupational Employment
             and Wage Statistics Tables from the U.S. Bureau of Labor Statistics to explore how earnings vary
             across states, major occupation groups, and individual jobs.
           </p>
@@ -95,6 +95,6 @@ export default function WagesInAmerica() {
           </section>
         </div>
       </main>
-    </>
+    </div>
   );
 }

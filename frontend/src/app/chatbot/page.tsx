@@ -6,7 +6,7 @@ import logo5 from "../../resources/logo5.png";
 import arrow from "../../resources/arrow.png";
 import graph from "../../resources/graph.png";
 import send from "../../resources/send.png";
-import save from "../../resources/save.png";
+import save from "../../resources/save.jpeg";
 
 import { useState, useEffect, useRef, FormEvent } from "react";
 import ReactMarkdown from "react-markdown";
@@ -32,6 +32,7 @@ export default function Chatbot() {
   const [showPrompts, setShowPrompts] = useState(true);
   const [savedChats, setSavedChats] = useState<SavedChat[]>([]);
   const [infoMessage, setInfoMessage] = useState("");
+  const [hasNewTurn, setHasNewTurn] = useState(false);
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
   const [username, setUsername] = useState<string | null>(null);
   const saveTimer = useRef<NodeJS.Timeout | null>(null);
@@ -96,6 +97,7 @@ export default function Chatbot() {
       });
       const data = await res.json();
       setMessages(prev => [...prev, { type: 'bot', text: data.response }]);
+      setHasNewTurn(true);
     } catch (error) {
       console.error("Error:", error);
       setMessages(prev => [...prev, { type: 'bot', text: "⚠️ Sorry, something went wrong." }]);
@@ -121,6 +123,7 @@ export default function Chatbot() {
 
       const data = await res.json();
       setMessages(prev => [...prev, { type: 'bot', text: data.response }]);
+      setHasNewTurn(true);
     } catch (error) {
       console.error("Error:", error);
       setMessages(prev => [...prev, { type: 'bot', text: "⚠️ Sorry, something went wrong." }]);
@@ -216,7 +219,7 @@ export default function Chatbot() {
       }));
 
       setMessages(resumedMessages);
-
+      setHasNewTurn(false);
       setShowPrompts(false); // ✅ Hide "Try Asking" when resuming
     } catch (error) {
       console.error("Error resuming chat:", error);
@@ -229,9 +232,13 @@ export default function Chatbot() {
     setInfoMessage("");
     setShowPrompts(true);
     setUserInput("");
+    setHasNewTurn(false);
   };
 
   const isMessageEmpty = userInput.trim() === "";
+
+  // Save button enabled only after a new user-bot turn
+  const canSave = hasNewTurn;
 
   // Delete chat handler
   const handleDeleteChat = async (chatId: string) => {
@@ -401,13 +408,14 @@ export default function Chatbot() {
             >
               <Image src={send} alt="Send" className="w-8 h-auto opacity-80 hover:opacity-100 transition" />
             </button>
-            <button
-              type="submit"
-              className={`transition-opacity duration-200
-                }`}
-                onClick={handleExit}
+            
+          <button
+              type="button"
+              className={`transition-opacity duration-200 ${canSave ? "opacity-100" : "opacity-50 cursor-not-allowed"}`}
+              onClick={handleExit}
+              disabled={!canSave}
             >
-              <Image src={send} alt="Send" className="w-8 h-auto opacity-80 hover:opacity-100 transition" />
+              <Image src={save} alt="Save" className="w-8 h-auto opacity-80 hover:opacity-100 transition" />
             </button>
           </form>
         </div>

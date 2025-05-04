@@ -26,7 +26,7 @@ export default function TableauEmbed({
   return (
     <div
       id={id}
-      className={`w-full h-[85vh] md:h-[90vh] lg:h-screen ${className}`}
+      className={`w-full h-[85vh] md:h-[70vh] ${className}`}
       ref={ref}
     >
       <noscript>

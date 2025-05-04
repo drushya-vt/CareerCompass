@@ -7,21 +7,22 @@ import {
   UserGroupIcon,
   ArrowTrendingUpIcon,
   BriefcaseIcon,
-  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
+import Header from "@/components/Header";
 
 export default function DataVisualizationPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%] py-16 px-6 text-white relative">
+    <main className="bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%] min-h-screen text-white">
+      <Header/>
       {/* Hero Intro */}
-      <section className="max-w-3xl mx-auto text-center mb-12">
-        
+      <section className="mt-16 max-w-3xl mx-auto text-center mb-12">
+
         <div className="inline-flex items-center gap-3 justify-center">
           <h1 className="text-5xl font-extrabold text-white">Career Insights</h1>
         </div>
         <p className="mt-6 text-xl text-white/90 mb-4">
           Dive into interactive data stories—compare wages, explore employment trends,
-          and uncover the skills powering tomorrow’s careers.
+          and uncover the skills powering tomorrow's careers.
         </p>
       </section>
 
@@ -29,22 +30,22 @@ export default function DataVisualizationPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-screen-lg mx-auto mb-12">
         <div className="flex flex-col items-center bg-white/20 backdrop-blur-md p-4 rounded-lg">
           <ChartBarIcon className="w-8 h-8 text-white mb-2" />
-          <span className="text-lg font-semibold">$58,260</span>
+          <span className="text-lg font-semibold">$67,869</span>
           <span className="text-sm text-white/80">Avg. Median Wage</span>
         </div>
         <div className="flex flex-col items-center bg-white/20 backdrop-blur-md p-4 rounded-lg">
           <UserGroupIcon className="w-8 h-8 text-white mb-2" />
-          <span className="text-lg font-semibold">157M</span>
-          <span className="text-sm text-white/80">Total Workforce</span>
+          <span className="text-lg font-semibold">167M</span>
+          <span className="text-sm text-white/80">Employment 2023</span>
         </div>
         <div className="flex flex-col items-center bg-white/20 backdrop-blur-md p-4 rounded-lg">
           <ArrowTrendingUpIcon className="w-8 h-8 text-white mb-2" />
-          <span className="text-lg font-semibold">+5.2%</span>
-          <span className="text-sm text-white/80">Growth Rate</span>
+          <span className="text-lg font-semibold">4.0%</span>
+          <span className="text-sm text-white/80">Proj. Growth (2023 - 2033)</span>
         </div>
         <div className="flex flex-col items-center bg-white/20 backdrop-blur-md p-4 rounded-lg">
           <BriefcaseIcon className="w-8 h-8 text-white mb-2" />
-          <span className="text-lg font-semibold">Retail Sales</span>
+          <span className="text-lg font-semibold">Doctors</span>
           <span className="text-sm text-white/80">Top Job</span>
         </div>
       </div>

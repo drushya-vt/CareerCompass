@@ -39,9 +39,9 @@ export default function Header() {
   return (
     <header
       className={`header ${
-        pathname === "/homepage"
+        pathname === "/homepage" || pathname === "/datavisualization"
           ? "bg-transparent shadow-none border-none outline-none"
-          : "bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%] shadow-lg"
+          : "fixed top-0 left-0 w-full z-50 bg-gradient-to-br from-rose-500 via-violet-500 to-indigo-800 animate-gradient-x bg-[length:400%_400%] shadow-lg"
       }`}
     >
       <div className="header-container">
