@@ -16,7 +16,7 @@ def create_tables():
     # Users
     try:
         dynamodb.create_table(
-            TableName="G2_Users",
+            TableName="CS5934_G2_Users",
             KeySchema=[{"AttributeName": "username", "KeyType": "HASH"}],
             AttributeDefinitions=[{"AttributeName": "username", "AttributeType": "S"}],
             ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
@@ -28,7 +28,7 @@ def create_tables():
     # UserSessions
     try:
         dynamodb.create_table(
-            TableName="G2_UserSessions",
+            TableName="CS5934_G2_UserSessions",
             KeySchema=[{"AttributeName": "username", "KeyType": "HASH"}],
             AttributeDefinitions=[{"AttributeName": "username", "AttributeType": "S"}],
             ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
@@ -40,7 +40,7 @@ def create_tables():
     # ChatHistories
     try:
         dynamodb.create_table(
-            TableName="G2_ChatHistories",
+            TableName="CS5934_G2_ChatHistories",
             KeySchema=[
                 {"AttributeName": "chat_id", "KeyType": "HASH"}
             ],
@@ -80,7 +80,7 @@ def verify_tables():
 
 
 # Table you want to inspect
-table_name = "G2_Users"
+table_name = "CS5934_G2_Users"
 
 def parse_item(item):
     """Flatten DynamoDB types (e.g., {"S": "value"} → "value")"""
