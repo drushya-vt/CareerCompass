@@ -35,14 +35,22 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 groq_client = Groq(api_key=GROQ_API_KEY)
 
 chat_model = ChatOpenAI(
-    model="llama3-70b-8192",
+    model="llama-3.3-70b-versatile",
     openai_api_key=GROQ_API_KEY,
     openai_api_base="https://api.groq.com/openai/v1",
     max_tokens=800,
-    temperature=0.7
+    temperature=0.3
 )
 
-SYSTEM_PROMPT = "You are a chatbot named CareerCompass..."
+SYSTEM_PROMPT = (
+    "You are a chatbot named CareerCompass. You are a highly knowledgeable and supportive career assistant. "
+    "You are assisting a user explore career options and make informed decisions based on their interests, "
+    "education, skills, and preferences. Each time the user converses with you, make sure the context is "
+    "professional and about their career and that you are providing a helpful response. If the user asks you "
+    "to do something that is not about a career guidance you should refuse to respond. Keep responses concise "
+    "yet informative. Use bullet points or numbered lists to break down complex topics into digestible steps. Please do not give any details about salary regarding any position and please do not go out of context striclty! Do not response even if the user asks for it."
+)
+
 
 # Per-user memory
 user_conversations = {}
@@ -80,20 +88,60 @@ async def chatbot_endpoint(chat: ChatRequest, request: Request):
 
     if len(conversation_history) == 1:
         context_results = query_vector_store(chat.query, n_results=3)
+        print("Context results:", context_results)
         if not context_results or not context_results.get("documents") or not context_results["documents"][0]:
             fallback = "I couldn't find much information."
             return {"query": chat.query, "response": fallback}
 
         context_str = ""
         for i, doc in enumerate(context_results['documents'][0][:3]):
-            doc_lines = doc.split('\n')
-            context_str += f"### 📄 Document {i+1}\n"
-            context_str += f"**🧑‍💼 Title:** {doc_lines[0][6:]}\n"
-            context_str += f"**📘 Description:** {doc_lines[1][12:][:200]}...\n"
-            context_str += f"**🛠️ Key Skills:**\n- {doc_lines[2][7:][:100]}...\n"
-            context_str += f"**🎓 Education:**\n- {doc_lines[3][10:][:100]}...\n"
+                doc_lines = doc.split('\n')  # Split document into lines
+                context_str += f"### 📄 Document {i+1}\n"
+                context_str += f"**🧑‍💼 Title:** {doc_lines[0][6:]}\n"
+                context_str += f"**📘 Description:** {doc_lines[1][12:][:200]}...\n"
+                context_str += f"**🛠️ Key Skills:**\n- {doc_lines[2][7:][:100]}...\n"
+                context_str += f"**🎓 Education:**\n- {doc_lines[3][10:][:100]}...\n"
+                context_str += f"**💼 Work Experience:**\n- {doc_lines[4][15:][:100]}...\n" if len(doc_lines) > 4 else "**💼 Work Experience:**\n- None\n"
+                context_str += f"**🧪 On-the-Job Training:**\n- {doc_lines[5][21:][:100]}...\n" if len(doc_lines) > 5 else "**🧪 On-the-Job Training:**\n- None\n"
+                context_str += f"**🧰 Work Activities:**\n- {doc_lines[6][15:][:100]}...\n" if len(doc_lines) > 6 else "**🧰 Work Activities:**\n- None\n"
+                context_str += f"**🔧 Technical Skills:**\n- {doc_lines[7][17:][:100]}...\n" if len(doc_lines) > 7 else "**🔧 Technical Skills:**\n- None\n"
+                context_str += f"**📋 Core Tasks:**\n- {doc_lines[8][11:][:100]}...\n" if len(doc_lines) > 8 else "**📋 Core Tasks:**\n- None\n"
+                context_str += f"**➕ Supplemental Tasks:**\n- {doc_lines[9][18:][:100]}...\n" if len(doc_lines) > 9 else "**➕ Supplemental Tasks:**\n- None\n"
+                context_str += "\n"
+   
 
-        full_prompt = f"""You are a career guidance assistant...\n\nQuery: {chat.query}\n\nContext:\n{context_str}\n\nAnswer:"""
+
+        full_prompt = f"""You are a career guidance assistant helping users explore job roles based on their interests and goals.
+Use the summarized job descriptions below as your primary knowledge source to answer the user's query.
+Base your answers strictly on the provided information, but if relevant, include industry-recognized certifications or skills that are commonly required or beneficial for the role.
+Always ensure your answers are specific, helpful, and actionable.
+
+Structure your response in clean, readable **Markdown** that works well with Tailwind CSS's `prose` styling. Be clear, organized, and visually appealing.
+
+Formatting guidelines:
+- Use `##` for main section headings (e.g., Job Roles, Skills, Education)
+- Use `###` for sub-sections (e.g., Core Skills, Tools, Core Tasks)
+- Use `-` for bullet points
+- Use `>` for tips, quotes, or suggestions
+- Ensure spacing between sections for readability
+- Use emojis to enhance tone and understanding, but keep them relevant
+
+Ensure:
+- No repeated or redundant roles
+- Clear separation between core content and tips
+- Bullet lists and spacing render correctly
+- Content is concise and scannable
+
+Output only the Markdown-formatted response.
+Please do not give any details about salary regarding any position and please do not go out of context striclty! Do not response even if the user asks for it.
+
+
+Query: {chat.query}
+
+Context:
+{context_str}
+
+Answer:"""
         conversation_history.append(HumanMessage(content=full_prompt))
     else:
         conversation_history.append(HumanMessage(content=chat.query))
