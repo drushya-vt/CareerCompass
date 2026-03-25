@@ -3,44 +3,4 @@
         "password": "password123",
         "email": "test@example.com"
     },
-    "siddhi": {
-        "password": "siddhi",
-        "email": "siddhi@bt.edu"
-    },
-    "siddhikasera": {
-        "password": "siddhi123",
-        "email": "siddhi@vt.edu"
-    },
-    "siddhikasera20": {
-        "password": "siddhikasera20",
-        "email": "siddhikasera@gmail.com"
-    },
-    "siddhimk": {
-        "password": "siddhi123",
-        "email": "siddhik@yahoo.com"
-    },
-    "siddhi20": {
-        "password": "siddhi20",
-        "email": "smk339@gmail.com"
-    },
-    "smk339": {
-        "password": "smk339",
-        "email": "smk339@rut.edu"
-    },
-    "siddhikasera2022": {
-        "password": "siddhikasera2022",
-        "email": "siddhikasera@vt.edu"
-    },
-    "siddhi765": {
-        "password": "siddhi",
-        "email": "smk345@gmail.com"
-    },
-    "shubham": {
-        "password": "shubham123",
-        "email": "shubhamd23@vt.edu"
-    },
-    "shubhamd23": {
-        "password": "shubhamd23",
-        "email": "shubhamd23@vt.edu"
-    }
 }
